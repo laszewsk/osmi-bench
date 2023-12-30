@@ -25,13 +25,22 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
    cd osmi-bench
    ```
 
+0.1. Load apptainer and python
+
+   ```bash
+   module load apptainer
+   module load gcc/11.4.0  openmpi/4.1.4 python/3.11.4
+   mkdir -p /scratch/$USER/.singularity/cache
+   export APPTAINER_CACHEDIR=/scratch/$USER/.singularity/cache
+   ```
+
 1. Setup environment - on Summit login node. Note that this benchmark is currently setup to `module load open-ce/1.1.3-py38-0` and `module load cuda/11.0.2`. Users on other systems may `pip install -r requirements.txt` (it may be preferable to install the packages one by one either by using `pip` or `conda`... sometimes one works better over the other). In addition to TensorFlow and gRPC, users also need to install TensorFlow Serving and if wanting to use multiple GPUs may install an HAProxy Singularity container as follows:
 
-        > singularity pull docker://haproxy
+        > apptainer pull docker://haproxy
 
     On x86_64 systems, TensorFlow Serving may be downloaded as a Singularity container using:
 
-        > singularity pull docker://tensorflow/serving:latest-gpu
+        > apptainer pull docker://tensorflow/serving:latest-gpu
 
     On POWER9 systems, TensorFlow Serving may be installed via the conda repository at opence.mit.edu.
 
