@@ -49,11 +49,15 @@ b1>
 
 1. Setup environment - on Summit login node. Note that this benchmark is currently setup to `module load open-ce/1.1.3-py38-0` and `module load cuda/11.0.2`. Users on other systems may `pip install -r requirements.txt` (it may be preferable to install the packages one by one either by using `pip` or `conda`... sometimes one works better over the other). In addition to TensorFlow and gRPC, users also need to install TensorFlow Serving and if wanting to use multiple GPUs may install an HAProxy apptainer container as follows:
 
-       ok > apptainer pull docker://haproxy
+    apptainer pull docker://nvcr.io/nvidia/tensorflow:23.12-tf2-py3
+    apptainer pull docker://haproxy
+
 
     On x86_64 systems, TensorFlow Serving may be downloaded as a apptainer container using:
 
-       ok > apptainer pull docker://tensorflow/serving:latest-gpu
+    ? > apptainer pull docker://tensorflow/serving:latest-gpu
+    
+
 
     <!-- On POWER9 systems, TensorFlow Serving may be installed via the conda repository at opence.mit.edu.
 
@@ -65,7 +69,7 @@ b1>
 2. Interactive usage:
 
     This is somehow wrong as we are not using the GPU when running python
-    
+
         ijob -c 1  \
             --gres=gpu:a100:1 \
             --time=3:00:00 \
@@ -80,9 +84,9 @@ b1>
     ```bash
     container>
         cd models
-        python train.py medium_cnn
-        python train.py small_lstm
-        python train.py large_tcnn
+        apptainer exec --nv tesnsorflow python train.py small_lstm
+        apptainer exec --nv tesnsorflow python train.py medium_cnn
+        apptainer exec --nv tesnsorflow python train.py large_tcnn
     ```
 
     Check the model output:
