@@ -9,6 +9,22 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
 # Instructions
 
+0. setup python
+
+   ```bash
+   export USER_SCRATCH=/scratch/$USER
+   export USER_LOCALSCRATCH=/localscratch/$USER
+   export BASE=$USER_SCRATCH
+   export CLOUDMESH_CONFIG_DIR=$BASE/.cloudmesh
+   export PROJECT=$BASE/osmi-bench
+   export EXEC_DIR=$PROJECT/target/rivanna
+
+   mkdir -p $BASE
+   cd $BASE
+   git clone https://github.com/laszewsk/osmi-bench.git
+   cd osmi-bench
+   ```
+
 1. Setup environment - on Summit login node. Note that this benchmark is currently setup to `module load open-ce/1.1.3-py38-0` and `module load cuda/11.0.2`. Users on other systems may `pip install -r requirements.txt` (it may be preferable to install the packages one by one either by using `pip` or `conda`... sometimes one works better over the other). In addition to TensorFlow and gRPC, users also need to install TensorFlow Serving and if wanting to use multiple GPUs may install an HAProxy Singularity container as follows:
 
         > singularity pull docker://haproxy
