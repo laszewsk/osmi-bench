@@ -100,18 +100,22 @@ GREGOR GOT TILL HERE
 
     ```bash
     apptainer>  
-        tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=models.conf >& log & 
+        rm log
+        tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log & 
     ```
 
     Make sure TF Serving started correctly:
 
-        > lsof -i :8500 
+    ```bash
+    apptainer>
+        lsof -i :8500 
+    ```
 
     *Should list a process with status LISTEN if working correctly.*
 
     Send packets to be inference:
 
-        > python tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
+        apptainer exec --nv ../images/cloudmesh-tfs.sif python tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
 
     Output of timings should be in file results.csv.
 

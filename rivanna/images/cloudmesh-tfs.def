@@ -4,4 +4,5 @@ From: tensorflow/serving:latest
 %post
     apt-get update
     apt install lsof
+    apt install python3
 
