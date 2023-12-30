@@ -16,8 +16,8 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
    export USER_LOCALSCRATCH=/localscratch/$USER
    export BASE=$USER_SCRATCH
    export CLOUDMESH_CONFIG_DIR=$BASE/.cloudmesh
-   export PROJECT=$BASE/osmi-bench
-   export EXEC_DIR=$PROJECT/target/rivanna
+   export PROJECT=$BASE/cm/osmi-bench
+   export EXEC_DIR=$PROJECT/rivanna
 
    mkdir -p $BASE
    cd $BASE
@@ -25,42 +25,65 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
    cd osmi-bench
    ```
 
-0.1. Load apptainer and python
+0.1. Load apptainer 
 
    ```bash
    module load apptainer
-   module load gcc/11.4.0  openmpi/4.1.4 python/3.11.4
-   mkdir -p /scratch/$USER/.singularity/cache
-   export APPTAINER_CACHEDIR=/scratch/$USER/.singularity/cache
+   mkdir -p /scratch/$USER/.apptainer/cache
+   export APPTAINER_CACHEDIR=/scratch/$USER/.apptainer/cache
    ```
 
-1. Setup environment - on Summit login node. Note that this benchmark is currently setup to `module load open-ce/1.1.3-py38-0` and `module load cuda/11.0.2`. Users on other systems may `pip install -r requirements.txt` (it may be preferable to install the packages one by one either by using `pip` or `conda`... sometimes one works better over the other). In addition to TensorFlow and gRPC, users also need to install TensorFlow Serving and if wanting to use multiple GPUs may install an HAProxy Singularity container as follows:
+0.2 setup python
 
-        > apptainer pull docker://haproxy
+b1>
+  cd $EXEC_DIR
+  module load gcc/11.4.0  openmpi/4.1.4 python/3.11.4
+  which python
+  python --version
+  python -m venv $BASE/OSMI # takes about 5.2s
+  source $BASE/OSMI/bin/activate
+  pip install pip -U
+  #time pip install -r $EXEC_DIR/requirements.txt # takes about 1m21s
+  #cms help
+```
 
-    On x86_64 systems, TensorFlow Serving may be downloaded as a Singularity container using:
+1. Setup environment - on Summit login node. Note that this benchmark is currently setup to `module load open-ce/1.1.3-py38-0` and `module load cuda/11.0.2`. Users on other systems may `pip install -r requirements.txt` (it may be preferable to install the packages one by one either by using `pip` or `conda`... sometimes one works better over the other). In addition to TensorFlow and gRPC, users also need to install TensorFlow Serving and if wanting to use multiple GPUs may install an HAProxy apptainer container as follows:
 
-        > apptainer pull docker://tensorflow/serving:latest-gpu
+       ok > apptainer pull docker://haproxy
 
-    On POWER9 systems, TensorFlow Serving may be installed via the conda repository at opence.mit.edu.
+    On x86_64 systems, TensorFlow Serving may be downloaded as a apptainer container using:
+
+       ok > apptainer pull docker://tensorflow/serving:latest-gpu
+
+    <!-- On POWER9 systems, TensorFlow Serving may be installed via the conda repository at opence.mit.edu.
 
         > conda config --prepend channels https://opence.mit.edu
         > conda create -n osmi python=3.8
         > conda activate osmi
-        > conda install tensorflow-serving
+        > conda install tensorflow-serving -->
 
 2. Interactive usage:
 
-        > bsub -Is -P ARD143 -nnodes 1 -W 2:00 $SHELL
-
-    *Note: replace ARD143 with subproject number*
-    *Modify both models.conf and models.py to be consistent with your models*
+    This is somehow wrong as we are not using the GPU when running python
+    
+        ijob -c 1  \
+            --gres=gpu:a100:1 \
+            --time=3:00:00 \
+            --reservation=bi_fox_dgx \
+            --partition=bii-gpu \
+            --account=bii_dsc_community
 
 3. Preparing model 
 
     Generate the model in the models directory using:
 
-        > python train.py medium_cnn
+    ```bash
+    container>
+        cd models
+        python train.py medium_cnn
+        python train.py small_lstm
+        python train.py large_tcnn
+    ```
 
     Check the model output:
 
@@ -70,7 +93,7 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
     Launch TensorFlow Serving:
 
-        > singularity shell --home `pwd` --nv serving_latest-gpu.sif # (if using container)
+        > apptainer shell --home `pwd` --nv serving_latest-gpu.sif # (if using container)
 
         > tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=models.conf >& log & 
 
@@ -97,13 +120,13 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
 Now we need to launch TensorFlow Serving each one pinned to a specific GPU as follows:
 
-        > CUDA_VISIBLE_DEVICES=0 singularity run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8500 --model_config_file=models.conf >& tfs0.log
+        > CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8500 --model_config_file=models.conf >& tfs0.log
 
-        > CUDA_VISIBLE_DEVICES=1 singularity run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8501 --model_config_file=models.conf >& tfs1.log &
+        > CUDA_VISIBLE_DEVICES=1 appteiner run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8501 --model_config_file=models.conf >& tfs1.log &
 
-Assuming the HAProxy singularity container has been downloaded, we can launch the container using the following command:
+Assuming the HAProxy singularity apptainer has been downloaded, we can launch the container using the following command:
 
-        > singularity exec --bind `pwd`:/home --pwd /home \
+        > apptainer exec --bind `pwd`:/home --pwd /home \
                       haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg >& haproxy.log &
 
 5. Fully automated launch process (from launch/batch node)
