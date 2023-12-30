@@ -1,0 +1,7 @@
+config:
+    server: "localhost"
+    gpu: "A100-SXM2-32GB"
+    batch: [1, 2, 4, 8]
+    ngpus: [1]
+    concurrency: [1, 2, 4, ]
+    ports: [8500]

@@ -1,0 +1,19 @@
+#!/bin/sh
+#BSUB -nnodes 1
+#BSUB -q batch
+#BSUB -J osmibench
+#BSUB -P ABC123
+#BSUB -o /gpfs/alpine/scratch/username/abc123/%J.out 
+#BSUB -e /gpfs/alpine/scratch/username/abc123/%J.err
+#BSUB -W 1:00
+#BSUB -alloc_flags nvme
+
+cd $LS_SUBCWD
+
+./1_start_tfs_servers_erf.sh
+./2_start_load_balancers.sh
+./3_run_benchmark.sh medium_cnn
+
+# Job keeps running until walltime times out because of servers 
+# running in background so explicitly kill the job now that we are done
+bkill $LSB_JOBID
