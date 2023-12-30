@@ -72,15 +72,36 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
         sh check-models.sh
     ```
 
+
+
 GREGOR GOT TILL HERE
 
-    Update name and path in models.conf file. Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
+    > Note: we stand in dir rivanna
+
+
+
+    Update name and path in models.conf file. 
+
+    ```bash`
+    node>
+        sh bin/convert-model-config.sh `pwd` benchmark/models.in.conf > benchmark/models.conf
+    ``````
+
+    
+    Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
 
     Launch TensorFlow Serving:
 
-        > apptainer shell --home `pwd` --nv serving_latest-gpu.sif # (if using container)
 
-        > tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=models.conf >& log & 
+    ```bash
+    node>
+        apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
+    ```
+
+    ```bash
+    apptainer>  
+        tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=models.conf >& log & 
+    ```
 
     Make sure TF Serving started correctly:
 
@@ -94,7 +115,7 @@ GREGOR GOT TILL HERE
 
     Output of timings should be in file results.csv.
 
-6. Using multiple GPUs via HAProxy load balancer
+1. Using multiple GPUs via HAProxy load balancer
 
     To use multiple GPUs, we use HAProxy to round-robin the requests across the multiple GPUs. Assuming we have two GPUs we want to use, we first need to edit the file haproxy-grpc.cfg to add lines for each of the inference servers: 
 

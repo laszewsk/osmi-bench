@@ -1,10 +1,18 @@
-IMAGE=cloudmesh-tensorflow
+IMAGE_TF=cloudmesh-tensorflow
+IMAGE_TFS=cloudmesh-tfs
 
-image: 
-	apptainer build ${IMAGE}.sif ${IMAGE}.def
 
-shell:
-	singularity shell --nv ${IMAGE}.sif
+images: image-tf
+
+image-tf: 
+	apptainer build ${IMAGE_TF}.sif ${IMAGE_TF}.def
+
+shell-tf:
+	singularity shell --nv ${IMAGE_TF}.sif
+
+image-tfs: 
+	apptainer build ${IMAGE_TFS}.sif ${IMAGE_TFS}.def
+
 
 
 # watch: 
