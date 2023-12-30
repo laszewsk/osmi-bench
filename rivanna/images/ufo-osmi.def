@@ -1,0 +1,14 @@
+Bootstrap: docker
+From:  nvcr.io/nvidia/tensorflow:23.12-tf2-py3
+
+%post
+	pip install pip -U
+	pip install numpy
+	pip install matplotlib
+	pip install pandas
+	pip install scikit-learn
+	pip install opencv-python
+	pip install git+https://github.com/mlperf/logging.git
+	pip install cloudmesh-common==4.3.195
+	pip install cloudmesh-gpu==4.3.23
+	pip install tensorflow-serving-api

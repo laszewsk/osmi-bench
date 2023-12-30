@@ -9,7 +9,7 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
 # Instructions
 
-0. setup python
+1. Setup python
 
    ```bash
    export BASE=/scratch/$USER
@@ -20,67 +20,59 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
    cd osmi-bench
    ```
    
-0.1. Activate environment 
+2. Activate environment 
+
+   This installs python, aptainer, and sets up soome conveneient environment variables
 
    ```bash
-   source env.sh
+   rivanna>
+     source env.sh
    ```
 
-0.2 setup python
+3. Prepare the containers
 
-b1>
-  cd $EXEC_DIR
-  
-  pip install pip -U
-  #time pip install -r $EXEC_DIR/requirements.txt # takes about 1m21s
-  #cms help
-```
-
-1. Setup environment - on Summit login node. Note that this benchmark is currently setup to `module load open-ce/1.1.3-py38-0` and `module load cuda/11.0.2`. Users on other systems may `pip install -r requirements.txt` (it may be preferable to install the packages one by one either by using `pip` or `conda`... sometimes one works better over the other). In addition to TensorFlow and gRPC, users also need to install TensorFlow Serving and if wanting to use multiple GPUs may install an HAProxy apptainer container as follows:
-
-    apptainer pull docker://nvcr.io/nvidia/tensorflow:23.12-tf2-py3
-    apptainer pull docker://haproxy
+   ```bash
+   rivanna>
+     source images.sh
+     cd images
+     make images
+   ```
 
 
-    On x86_64 systems, TensorFlow Serving may be downloaded as a apptainer container using:
 
-    ? > apptainer pull docker://tensorflow/serving:latest-gpu
-    
-
-
-    <!-- On POWER9 systems, TensorFlow Serving may be installed via the conda repository at opence.mit.edu.
-
-        > conda config --prepend channels https://opence.mit.edu
-        > conda create -n osmi python=3.8
-        > conda activate osmi
-        > conda install tensorflow-serving -->
-
-2. Interactive usage:
+4. Interactive usage:
 
     This is somehow wrong as we are not using the GPU when running python
 
-        ijob -c 1  \
-            --gres=gpu:a100:1 \
-            --time=3:00:00 \
-            --reservation=bi_fox_dgx \
-            --partition=bii-gpu \
-            --account=bii_dsc_community
+    ```bash
+    rivanna>
+      sh login.sh
+    ```
 
-3. Preparing model 
+   ```bash 
+   node>
+     hostname
+     nvidia-smi
+     module load apptainer
+   ```
+
+5. Preparing model 
 
     Generate the model in the models directory using:
 
     ```bash
-    container>
-        cd models
-        apptainer exec --nv tesnsorflow python train.py small_lstm
-        apptainer exec --nv tesnsorflow python train.py medium_cnn
-        apptainer exec --nv tesnsorflow python train.py large_tcnn
+    node>
+        sh create-models.sh
     ```
 
     Check the model output:
 
-        > saved_model_cli show --all --dir medium_cnn
+    ```bash
+    node>
+        sh check-models.sh
+    ```
+
+GREGOR GOT TILL HERE
 
     Update name and path in models.conf file. Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
 
@@ -102,7 +94,7 @@ b1>
 
     Output of timings should be in file results.csv.
 
-4. Using multiple GPUs via HAProxy load balancer
+6. Using multiple GPUs via HAProxy load balancer
 
     To use multiple GPUs, we use HAProxy to round-robin the requests across the multiple GPUs. Assuming we have two GPUs we want to use, we first need to edit the file haproxy-grpc.cfg to add lines for each of the inference servers: 
 

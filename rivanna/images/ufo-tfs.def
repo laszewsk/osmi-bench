@@ -1,0 +1,33 @@
+Bootstrap: docker
+From: tensorflow/serving:latest
+
+%post
+    # pass
+    
+%environment
+    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+%appinstall serving_latest_gpu
+    # pass
+    
+%apprun serving_latest_gpu
+    if [ -z "$PORT" ]; then
+        echo "Please specify the PORT environment variable"
+        exit 1
+    fi
+
+    if [ -z "$MODEL_CONFIG_FILE" ]; then
+        echo "Please specify the MODEL_CONFIG_FILE environment variable"
+        exit 1
+    fi
+
+    # Start TensorFlow Serving with provided arguments
+    # check the two port , likely only one needed? 
+    tensorflow_model_server --port=$PORT --rest_api_port=8502 --model_config_file=$MODEL_CONFIG_FILE
+
+
+# ideas
+
+# passing the argument  on call of tfs is also possible
+#
+# singularity run tfs_container.sif --bind /path/to/your/models:/models --app tfserving --args "--port 8501"

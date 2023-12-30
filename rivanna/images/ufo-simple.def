@@ -1,0 +1,10 @@
+#Bootstrap: localimage
+#From: /share/resources/containers/singularity/tensorflow-2.10.0.sif
+#From:  nvcr.io/nvidia/tensorflow:23.04-tf2-py3
+
+Bootstrap: docker
+From:  nvcr.io/nvidia/tensorflow:23.12-tf2-py3
+
+%post
+	pip install pip -U
+	pip install numpy

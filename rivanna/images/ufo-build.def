@@ -1,0 +1,17 @@
+#Bootstrap: localimage
+#From: /share/resources/containers/singularity/tensorflow-2.10.0.sif
+# From:  nvcr.io/nvidia/tensorflow:23.04-tf2-py3
+
+Bootstrap: docker
+From:  nvcr.io/nvidia/tensorflow:23.12-tf2-py3
+%post
+	pip install pip -U
+	pip install numpy
+	pip install matplotlib
+	pip install pandas
+	pip install scikit-learn
+	pip install opencv-python
+	pip install git+https://github.com/mlperf/logging.git
+	pip install cloudmesh-common
+	pip install cloudmesh-gpu
+	pip install tensorflow-serving-api

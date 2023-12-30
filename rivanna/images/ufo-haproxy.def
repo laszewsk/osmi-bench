@@ -1,0 +1,24 @@
+#
+# this is just an idea
+#
+Bootstrap: docker
+From: ubuntu:latest
+
+%post
+    # Update and install dependencies
+    apt-get update
+    apt-get install -y haproxy
+
+%environment
+    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+#
+# note we may want to not do this as runscript so we can shell
+# into it but use app names
+# Also this assumes cfg file which should actually be in cwd,
+# as we want to modify. We also want to mdify cfg. with yaml
+# file and export to cfg
+#
+
+%runscript
+    /usr/sbin/haproxy -f /etc/haproxy/haproxy.cfg -db

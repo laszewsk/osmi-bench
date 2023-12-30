@@ -1,0 +1,6 @@
+*.sif
+__pycache__
+*~
+models/large_tcnn
+models/medium_cnn
+models/small_lstm
