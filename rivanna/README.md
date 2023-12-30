@@ -12,36 +12,25 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 0. setup python
 
    ```bash
-   export USER_SCRATCH=/scratch/$USER
-   export USER_LOCALSCRATCH=/localscratch/$USER
-   export BASE=$USER_SCRATCH
-   export CLOUDMESH_CONFIG_DIR=$BASE/.cloudmesh
-   export PROJECT=$BASE/cm/osmi-bench
-   export EXEC_DIR=$PROJECT/rivanna
-
+   export BASE=/scratch/$USER
+ 
    mkdir -p $BASE
    cd $BASE
    git clone https://github.com/laszewsk/osmi-bench.git
    cd osmi-bench
    ```
-
-0.1. Load apptainer 
+   
+0.1. Activate environment 
 
    ```bash
-   module load apptainer
-   mkdir -p /scratch/$USER/.apptainer/cache
-   export APPTAINER_CACHEDIR=/scratch/$USER/.apptainer/cache
+   source env.sh
    ```
 
 0.2 setup python
 
 b1>
   cd $EXEC_DIR
-  module load gcc/11.4.0  openmpi/4.1.4 python/3.11.4
-  which python
-  python --version
-  python -m venv $BASE/OSMI # takes about 5.2s
-  source $BASE/OSMI/bin/activate
+  
   pip install pip -U
   #time pip install -r $EXEC_DIR/requirements.txt # takes about 1m21s
   #cms help
