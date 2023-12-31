@@ -115,7 +115,11 @@ GREGOR GOT TILL HERE
 
     Send packets to be inference:
 
-        apptainer exec --nv ../images/cloudmesh-tfs.sif python tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
+    ```bash
+    apptainer>
+        cd benchmark
+        python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
+    ```
 
     Output of timings should be in file results.csv.
 

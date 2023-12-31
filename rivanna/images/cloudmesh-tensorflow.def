@@ -2,6 +2,7 @@ Bootstrap: docker
 From:  nvcr.io/nvidia/tensorflow:23.12-tf2-py3
 
 %post
+    apt-get update 
 	pip install pip -U
 	pip install numpy
 	pip install matplotlib

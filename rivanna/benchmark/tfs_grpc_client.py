@@ -5,8 +5,11 @@ import os
 import pickle
 import sys
 import time
-
 from tqdm import tqdm
+import tensorflow as tf
+from tensorflow_serving.apis import predict_pb2
+from tensorflow_serving.apis import prediction_service_pb2_grpc
+
 
 # Parse the command-line arguments
 parser = argparse.ArgumentParser()
@@ -19,10 +22,6 @@ parser.add_argument('-v', '--verbose', action='store_true', help='verbose output
 parser.add_argument('-vv', action='store_true', help='extra verbose output')
 parser.add_argument('--redux', action='store_true', help='divide args.n by args.batch')
 args = parser.parse_args()
-
-import tensorflow as tf
-from tensorflow_serving.apis import predict_pb2
-from tensorflow_serving.apis import prediction_service_pb2_grpc
 
 hostport = args.server
 print(hostport)
