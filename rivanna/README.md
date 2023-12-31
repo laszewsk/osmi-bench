@@ -25,7 +25,8 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
    This installs python, aptainer, and sets up soome conveneient environment variables
 
    ```bash
-   rivanna>
+   b1>
+     cd rivanna
      source env.sh
    ```
 
@@ -33,9 +34,10 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
    ```bash
    rivanna>
-     source images.sh
+     sh images.sh
      cd images
      make images
+     cd ..
    ```
 
 

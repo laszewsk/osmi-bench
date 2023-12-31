@@ -2,7 +2,8 @@ IMAGE_TF=cloudmesh-tensorflow
 IMAGE_TFS=cloudmesh-tfs
 
 
-images: image-tf
+images: image-tf image-tfs
+
 
 image-tf: 
 	apptainer build --force ${IMAGE_TF}.sif ${IMAGE_TF}.def

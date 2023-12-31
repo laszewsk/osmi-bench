@@ -1,18 +1,17 @@
 export USER_SCRATCH=/scratch/$USER
 export USER_LOCALSCRATCH=/localscratch/$USER
 
-export CLOUDMESH_CONFIG_DIR=$BASE/.cloudmesh
+export CLOUDMESH_CONFIG_DIR=$USER_SCRATCH/.cloudmesh
 export APPTAINER_CACHEDIR=$USER_SCRATCH/.apptainer/cache
 
-export OSMI_PROJECT=$BASE/osmi-bench
-export OSMI_TARGET=$PROJECT/rivanna
+export OSMI_PROJECT=`pwd`
+export OSMI_TARGET=$OSMI_PROJECT/rivanna
 
 mkdir -p $APPTAINER_CACHEDIR
 
 echo "============================================================="
 echo "USER_SCRATCH:        " $USER_SCRATCH
 echo "USER_LOCALSCRATCH:   " $USER_LOCALSCRATCH
-echo "BASE:                " $BASE
 echo "CLOUDMESH_CONFIG_DIR:" $CLOUDMESH_CONFIG_DIR
 echo "APPTAINER_CACHEDIR:  " $APPTAINER_CACHEDIR
 echo "OSMI_PROJECT:        " $OSMI_PROJECT
@@ -24,8 +23,8 @@ module load apptainer
 
 echo "Create Python OSMI environment ..."
 module load gcc/11.4.0  openmpi/4.1.4 python/3.11.4
-python -m venv $BASE/OSMI # takes about 5.2s
-source $BASE/OSMI/bin/activate
+python -m venv $USER_SCRATCH/OSMI # takes about 5.2s
+source $USER_SCRATCH/OSMI/bin/activate
 pip install --upgrade pip > /dev/null
 
 echo "============================================================="
