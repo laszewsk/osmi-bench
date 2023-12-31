@@ -5,14 +5,14 @@ From: tensorflow/serving:latest
     apt-get update 
     apt install lsof -y
     apt install python3 -y
-    apt install pip3 -y
-    pip3 install grpcio
-    pip3 install numpy
-    pip3 install requests
-    pip3 install tqdm
+    apt install python3-pip -y
+    pip install grpcio
+    pip install numpy
+    pip install requests
+    pip install tqdm
 
     #smartredis==0.3.1
-    #tensorflow
-    #tensorflow-serving-api
+    pip install tensorflow
+    pip install tensorflow-serving-api
     
 

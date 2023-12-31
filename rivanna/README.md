@@ -72,13 +72,7 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
         sh check-models.sh
     ```
 
-
-
-GREGOR GOT TILL HERE
-
     > Note: we stand in dir rivanna
-
-
 
     Update name and path in models.conf file. 
 
@@ -122,6 +116,8 @@ GREGOR GOT TILL HERE
     ```
 
     Output of timings should be in file results.csv.
+
+GREGOR GOT TILL HERE
 
 1. Using multiple GPUs via HAProxy load balancer
 
