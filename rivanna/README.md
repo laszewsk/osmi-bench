@@ -48,7 +48,7 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
     ```bash
     rivanna>
-      sh login.sh
+      sh login-1.sh
     ```
 
    ```bash 
@@ -123,7 +123,7 @@ GREGOR GOT TILL HERE
 
 1. Using multiple GPUs via HAProxy load balancer
 
-    To use multiple GPUs, we use HAProxy to round-robin the requests across the multiple GPUs. Assuming we have two GPUs we want to use, we first need to edit the file haproxy-grpc.cfg to add lines for each of the inference servers: 
+    To use multiple GPUs, we use HAProxy to round-robin the requests across the multiple GPUs. Assuming we have two GPUs we want to use, we first need to edit the file `haproxy-grpc.cfg`` to add lines for each of the inference servers: 
 
         server tfs0 localhost:8500
         server tfs1 localhost:8501
@@ -132,16 +132,24 @@ GREGOR GOT TILL HERE
 
 Now we need to launch TensorFlow Serving each one pinned to a specific GPU as follows:
 
+
+    node>
+        CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
+        CUDA_VISIBLE_DEVICES=1 appteiner run --home `pwd` --nv images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
+
+
+
+<!-- 
         > CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8500 --model_config_file=models.conf >& tfs0.log
 
-        > CUDA_VISIBLE_DEVICES=1 appteiner run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8501 --model_config_file=models.conf >& tfs1.log &
+        > CUDA_VISIBLE_DEVICES=1 appteiner run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8501 --model_config_file=models.conf >& tfs1.log & -->
 
 Assuming the HAProxy singularity apptainer has been downloaded, we can launch the container using the following command:
 
-        > apptainer exec --bind `pwd`:/home --pwd /home \
-                      haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg >& haproxy.log &
+    node>
+        apptainer exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
 
-5. Fully automated launch process (from launch/batch node)
+1. Fully automated launch process (from launch/batch node)
 
     If running on more than one GPU, will need to launch up multiple TF Serving processes, each one bound to a specific GPU. This is what the script `1_start_tfs_servers.sh` will do. `2_start_load_balancers.sh` will launch HAProxy load balancers on each compute node. `3_run_benchmark.sh` automates the launch of multiple concurrent client threads for a sweep of batch sizes. Note, that `1_start_tfs_servers_erf.sh` uses explicit resource (ERF) indexing to launch the servers correctly across multiple GPUs and nodes on Summit. 
 
@@ -158,6 +166,6 @@ Assuming the HAProxy singularity apptainer has been downloaded, we can launch th
         # run an individual benchmark
         python benchmark.py -b 32 -m small_lstm -n 1024
 
-6. Production run. First update parameters in batch.lsf, then submit to LSF scheduler:
+2. Production run. First update parameters in batch.lsf, then submit to LSF scheduler:
 
         bsub batch.lsf 
