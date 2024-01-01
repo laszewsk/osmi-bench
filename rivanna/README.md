@@ -90,11 +90,11 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
     Launch TensorFlow Serving:
 
-
     ```bash
-    slurm-ijob-node>
+    node b1>
         apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
     ```
+
 
     ```bash
     apptainer>  
@@ -108,7 +108,7 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
     apptainer>
         lsof -i :8500 
     ```
-
+                                                                                                                                                                                                                                                                          
     *Should list a process with status LISTEN if working correctly.*
 
     Send packets to be inference:
@@ -128,7 +128,7 @@ To run this with a shell script you can do AFTER the login-1.sh
 
 ```
 node>
-    python3 test-tfs.py
+    python test-tfs.py
 ```
 
 GREGOR GOT TILL HERE

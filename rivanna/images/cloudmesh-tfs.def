@@ -13,7 +13,8 @@ From: tensorflow/serving:latest
     pip install requests
     pip install tqdm
 
-    pip install tensorflow
+    pip install tensorflow[and-cuda]
+
     pip install tensorflow-serving-api
     
 	pip install cloudmesh-common

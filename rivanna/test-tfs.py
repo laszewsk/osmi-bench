@@ -5,7 +5,7 @@ import time
 import os
 
 INSTANCE = "tfs"
-EXEC = f"apptainer exec instance://{INSTANCE}"
+EXEC = f"apptainer exec --nv instance://{INSTANCE}"
 
 import subprocess
 
@@ -56,8 +56,10 @@ assert "no instance found" not in r
 r = exec("apptainer instance list")
 assert INSTANCE not in r
 
+pwd = os.getcwd()
 
-exec(f"apptainer instance start images/cloudmesh-tfs.sif {INSTANCE} --nv")
+#        apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
+exec(f"apptainer instance start --nv --home {pwd} images/cloudmesh-tfs.sif {INSTANCE} ")
 exec("apptainer instance list")
 app_exec("ls")
 
