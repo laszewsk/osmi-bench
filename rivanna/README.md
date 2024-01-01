@@ -78,12 +78,15 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
     Update name and path in models.conf file. 
 
+
+### Interactive Test Tensorflow serving
+
+
     ```bash`
     node>
         sh bin/convert-model-config.sh `pwd` benchmark/models.in.conf > benchmark/models.conf
     ``````
 
-    
     Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
 
     Launch TensorFlow Serving:
@@ -118,6 +121,11 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
     ```
 
     Output of timings should be in file results.csv.
+
+### scripted test with an instance
+
+
+
 
 GREGOR GOT TILL HERE
 
