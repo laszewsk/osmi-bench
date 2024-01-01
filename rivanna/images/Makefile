@@ -17,7 +17,8 @@ image-tfs: cloudmesh-tfs.def
 shell-tfs:
 	singularity shell --nv ${IMAGE_TFS}.sif
 
-
+image-haproxy: haproxy_latest.sif
+	apptainer pull docker://haproxy:latest
 
 
 # watch: 

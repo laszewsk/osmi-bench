@@ -145,16 +145,14 @@ GREGOR GOT TILL HERE
 Now we need to launch TensorFlow Serving each one pinned to a specific GPU as follows:
 
 
+
+
+
     slurm-ijob-node>
-        CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
-        CUDA_VISIBLE_DEVICES=1 appteiner run --home `pwd` --nv images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
+        cd benchmark # if not already in it
+        CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
+        CUDA_VISIBLE_DEVICES=1 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
 
-
-
-<!-- 
-        > CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8500 --model_config_file=models.conf >& tfs0.log
-
-        > CUDA_VISIBLE_DEVICES=1 appteiner run --home `pwd` --nv serving_latest-gpu.sif tensorflow_model_server --port=8501 --model_config_file=models.conf >& tfs1.log & -->
 
 Assuming the HAProxy singularity apptainer has been downloaded, we can launch the container using the following command:
 
