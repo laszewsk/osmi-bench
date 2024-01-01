@@ -6,13 +6,17 @@ From: tensorflow/serving:latest
     apt install lsof -y
     apt install python3 -y
     apt install python3-pip -y
+	pip install pip -U
+
     pip install grpcio
     pip install numpy
     pip install requests
     pip install tqdm
 
-    #smartredis==0.3.1
     pip install tensorflow
     pip install tensorflow-serving-api
     
+	pip install cloudmesh-common
+	pip install cloudmesh-gpu
 
+    #smartredis==0.3.1

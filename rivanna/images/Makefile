@@ -5,13 +5,13 @@ IMAGE_TFS=cloudmesh-tfs
 images: image-tf image-tfs
 
 
-image-tf: 
+image-tf: cloudmesh-tensorflow.def
 	apptainer build --force ${IMAGE_TF}.sif ${IMAGE_TF}.def
 
 shell-tf:
 	singularity shell --nv ${IMAGE_TF}.sif
 
-image-tfs: 
+image-tfs: cloudmesh-tfs.def
 	apptainer build --force ${IMAGE_TFS}.sif ${IMAGE_TFS}.def
 
 
