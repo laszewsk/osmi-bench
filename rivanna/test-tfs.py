@@ -7,7 +7,20 @@ import os
 INSTANCE = "tfs"
 EXEC = f"apptainer exec instance://{INSTANCE}"
 
+import subprocess
+
 def exec(command=None, directory=None):
+    """
+    Executes a command and returns the output.
+
+    Args:
+        command (str): The command to be executed.
+        directory (str, optional): The directory in which the command should be executed. Defaults to None.
+            TODO: in apptainer dir cahnge did not work so i implemented a sh script that does this internally see last lines
+
+    Returns:
+        str: The output of the executed command.
+    """
     print("==============================")
     print(command)
     print("==============================")
@@ -19,6 +32,16 @@ def exec(command=None, directory=None):
     return result
 
 def app_exec(command=None, directory=None):
+    """
+    Executes a command in an tfs container instance
+    
+    Args:
+        command (str): The command to execute.
+        directory (str): The directory in which to execute the command.
+
+    Returns:
+        str: The result of the command execution.
+    """
     command = f"{EXEC} {command}"
     result = exec(command)
     return result
