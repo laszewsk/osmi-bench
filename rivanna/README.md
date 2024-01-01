@@ -52,7 +52,7 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
     ```
 
    ```bash 
-   node>
+   slurm-ijob-node>
      hostname
      nvidia-smi
      module load apptainer
@@ -63,14 +63,14 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
     Generate the model in the models directory using:
 
     ```bash
-    node>
+    slurm-ijob-node>
         sh create-models.sh
     ```
 
     Check the model output:
 
     ```bash
-    node>
+    slurm-ijob-node>
         sh check-models.sh
     ```
 
@@ -78,10 +78,10 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
     Update name and path in models.conf file. 
 
-    ```bash`
-    node>
+    ```bash
+    slurm-ijob-node>
         sh bin/convert-model-config.sh `pwd` benchmark/models.in.conf > benchmark/models.conf
-    ``````
+    ```
 
     
     Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
@@ -90,7 +90,7 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
 
     ```bash
-    node>
+    slurm-ijob-node>
         apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
     ```
 
@@ -133,7 +133,7 @@ GREGOR GOT TILL HERE
 Now we need to launch TensorFlow Serving each one pinned to a specific GPU as follows:
 
 
-    node>
+    slurm-ijob-node>
         CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
         CUDA_VISIBLE_DEVICES=1 appteiner run --home `pwd` --nv images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
 
@@ -146,7 +146,7 @@ Now we need to launch TensorFlow Serving each one pinned to a specific GPU as fo
 
 Assuming the HAProxy singularity apptainer has been downloaded, we can launch the container using the following command:
 
-    node>
+    slurm-ijob-node>
         apptainer exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
 
 1. Fully automated launch process (from launch/batch node)

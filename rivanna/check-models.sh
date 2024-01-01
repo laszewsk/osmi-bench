@@ -24,6 +24,6 @@ apptainer exec --nv ../images/cloudmesh-tensorflow.sif saved_model_cli show --al
 banner large_tcnn   
 apptainer exec --nv ../images/cloudmesh-tensorflow.sif saved_model_cli show --all --dir large_tcnn/1
 
-create_banner "Checing completed"
+banner "Checking completed"
 
 
