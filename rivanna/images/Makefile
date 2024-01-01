@@ -14,6 +14,10 @@ shell-tf:
 image-tfs: cloudmesh-tfs.def
 	apptainer build --force ${IMAGE_TFS}.sif ${IMAGE_TFS}.def
 
+shell-tfs:
+	singularity shell --nv ${IMAGE_TFS}.sif
+
+
 
 
 # watch: 
