@@ -106,7 +106,7 @@ class TFSInstance:
             result = self.instance_exec(command=f"sh {name}")
             return result
 
-    def start(self, gpu=None, clean=False):
+    def start(self, gpu=None, clean=False, wait=True):
         """
         Starts the TFS instance.
         1. fisrt ist looks for containers with the same name and stops them
@@ -142,14 +142,23 @@ class TFSInstance:
         print ("Server is up")
 
 # Usage
-        
+
+server = []     
 for i in range(0,2):
     print (i)
 
     name = f"tfs-{i}"
     port = 8500 + i
-    tfs = TFSInstance(name=name, port=port, gpu=i)
-    tfs.start()
+    tfs = TFSInstance(name=name, port=port)
+    server.append(tfs)
+    tfs.start(gpu=i, clean=True, wait=False)
+
+for i in range(0,2):
+    print (i)
+    tfs = server[i]
+    tfs.wait_for_port(port=8500+i)
+
+print("servers are up")
 
 # script = f"""
 # #!/bin/sh
