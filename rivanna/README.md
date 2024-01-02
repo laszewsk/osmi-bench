@@ -128,10 +128,29 @@ To run this with a shell script you can do AFTER the login-1.sh
 
 ```
 node>
+    source ./env.sh
     python test-tfs.py
 ```
 
-GREGOR GOT TILL HERE
+script source: [test-tfs-gregor.py](https://github.com/laszewsk/osmi-bench/blob/main/rivanna/test-tfs-gregor.py)
+
+### Scripted test with pythonic class for TFServing
+
+To showcase how to use apptainer instences within a python class to execute commands and scripts into a container started from an image we have developed
+
+script source: [test-tfs-gregor-2.py](https://github.com/laszewsk/osmi-bench/blob/main/rivanna/test-tfs-gregor-2.py)
+
+
+To run this with a shell script you can do AFTER the login-1.sh
+
+```
+node>
+    source ./env.sh
+    python test-tfs-gregor-2.py
+```
+
+
+### GREGOR GOT TILL HERE
 
 1. Using multiple GPUs via HAProxy load balancer
 
