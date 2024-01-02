@@ -164,20 +164,26 @@ node>
 Now we need to launch TensorFlow Serving each one pinned to a specific GPU as follows:
 
 
+```bash
+b1>
+    source env.sh
+    sh login-2.sh
 
+node>
+    nvidi-smi # to see if we have 2 gpus
 
-
-    slurm-ijob-node>
-        cd benchmark # if not already in it
-        CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
-        CUDA_VISIBLE_DEVICES=1 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
-
+node>
+    cd benchmark # if not already in it
+    CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
+    CUDA_VISIBLE_DEVICES=1 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
+```
 
 Assuming the HAProxy singularity apptainer has been downloaded, we can launch the container using the following command:
 
-    slurm-ijob-node>
-        apptainer exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
-
+```bash
+node>
+    apptainer exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
+```
 
 gregor guesses:
 

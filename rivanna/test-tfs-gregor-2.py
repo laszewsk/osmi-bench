@@ -21,8 +21,8 @@ class TFSInstance:
 
     """
 
-    def __init__(self, instance_name, image="images/cloudmesh-tfs.sif", port=8500):
-        self.INSTANCE = instance_name
+    def __init__(self, name="tfs", image="images/cloudmesh-tfs.sif", port=8500):
+        self.INSTANCE = name
         self.EXEC = f"apptainer exec --nv instance://{self.INSTANCE}"
         self.IMAGE = image
         self.PORT = port
@@ -83,7 +83,7 @@ class TFSInstance:
                 break
             time.sleep(dt)
 
-    def instance_script(self, script, name="tmp-benchmark.sh"):
+    def instance_script(self, script, name=None):
             """
             Executes a script on the TFS instance.
 
@@ -95,9 +95,10 @@ class TFSInstance:
                 str: The output of the executed script.
 
             """
+            name = name or f"tmp-script-{self.INSTANCE}.sh"
             with open(name, "w") as file:
                 file.write(script)
-            result = self.instance_exec(command="sh tmp-benchmark.sh")
+            result = self.instance_exec(command=f"sh {name}")
             return result
 
     def start(self):
@@ -122,22 +123,23 @@ class TFSInstance:
 
         self.system(f"apptainer instance start --nv --home {pwd} {self.IMAGE} {self.INSTANCE} ")
 
-        self.instance_exec(f"tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log &")
+        self.instance_exec(f"tensorflow_model_server --port={self.PORT} --rest_api_port=0 --model_config_file=benchmark/models.conf >& log-{self.INSTANCE}.log &")
         r = self.system("apptainer instance list")
 
-        self.wait_for_port(port=8500)
+        self.wait_for_port(port=self.PORT)
 
         print ("Server is up")
 
 # Usage
 name = "tfs-1"
-tfs = TFSInstance(name)
+port = 8500
+tfs = TFSInstance(name=name, port=port)
 tfs.start()
 
-script = """
+script = f"""
 #!/bin/sh
 cd benchmark
-python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
+python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}
 """
 
 r = tfs.instance_script(script)
