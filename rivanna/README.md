@@ -178,6 +178,17 @@ Assuming the HAProxy singularity apptainer has been downloaded, we can launch th
     slurm-ijob-node>
         apptainer exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
 
+
+gregor guesses:
+
+
+    ```bash
+    apptainer>
+        cd benchmark
+        python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8443
+    ```
+
+
 1. Fully automated launch process (from launch/batch node)
 
     If running on more than one GPU, will need to launch up multiple TF Serving processes, each one bound to a specific GPU. This is what the script `1_start_tfs_servers.sh` will do. `2_start_load_balancers.sh` will launch HAProxy load balancers on each compute node. `3_run_benchmark.sh` automates the launch of multiple concurrent client threads for a sweep of batch sizes. Note, that `1_start_tfs_servers_erf.sh` uses explicit resource (ERF) indexing to launch the servers correctly across multiple GPUs and nodes on Summit. 
