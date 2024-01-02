@@ -22,8 +22,7 @@ else
 fi
 
 echo "launching load balancer on all nodes"
-$LAUNCH_PER_NODE singularity exec --bind `pwd`:/home --pwd /home \
-    haproxy_latest.sif haproxy -d -f $CFG_FILE >& $WORKDIR/haproxy.log &
+$LAUNCH_PER_NODE singularity exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f $CFG_FILE >& $WORKDIR/haproxy.log &
 echo checking port 8443 to see if HAProxy is running...
 sleep_countdown 5 
 $LAUNCH_PER_NODE lsof -i :8443

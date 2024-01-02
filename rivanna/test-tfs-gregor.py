@@ -8,6 +8,9 @@ INSTANCE = "tfs-1"
 EXEC = f"apptainer exec --nv instance://{INSTANCE}"
 
 import subprocess
+import time
+
+
 
 def exec(command=None, directory=None):
     """
@@ -31,7 +34,7 @@ def exec(command=None, directory=None):
     print(result)
     return result
 
-def app_exec(command=None, directory=None):
+def instance_exec(command=None, directory=None):
     """
     Executes a command in an tfs container instance
     
@@ -45,6 +48,16 @@ def app_exec(command=None, directory=None):
     command = f"{EXEC} {command}"
     result = exec(command)
     return result
+
+def wait_for_port(port=8500, dt=1):
+    while True:
+        try:
+            r = instance_exec(f"lsof -i :{port}")
+        except:
+            r = ""
+        if 'LISTEN' in r:
+            break
+        time.sleep(dt)
 
 try:
     r = exec(f"apptainer instance stop {INSTANCE}")
@@ -61,22 +74,33 @@ pwd = os.getcwd()
 #        apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
 exec(f"apptainer instance start --nv --home {pwd} images/cloudmesh-tfs.sif {INSTANCE} ")
 
-app_exec(f"tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log &")
+instance_exec(f"tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log &")
 r = exec("apptainer instance list")
 
-while True:
-    try:
-        r = app_exec(f"lsof -i :8500")
-    except:
-        r = ""
-    if 'LISTEN' in r:
-         break
-    time.sleep(1)
+
+
+wait_for_port(port=8500)
 
 # done
 print ("Server is up")
 
 # Change the current working directory to "benchmark"
+
+def instance_script(script):
+    """
+    Executes a script and returns the output.
+
+    Args:
+        script (str): The script to be executed.
+
+    Returns:
+        str: The output of the executed script.
+    """
+    with open("tmp-benchmark.sh", "w") as file:
+        file.write(script)
+
+    result = instance_exec(command="sh tmp-benchmark.sh")
+    return result
 
 script = """
 #!/bin/sh
@@ -84,7 +108,4 @@ cd benchmark
 python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
 """
 
-with open("tmp-benchmark.sh", "w") as file:
-    file.write(script)
-
-r = app_exec(command="sh tmp-benchmark.sh")
+r = instance_script(script)
