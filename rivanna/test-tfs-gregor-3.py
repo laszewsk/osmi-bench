@@ -21,11 +21,12 @@ class TFSInstance:
 
     """
 
-    def __init__(self, name="tfs", image="images/cloudmesh-tfs.sif", port=8500):
+    def __init__(self, name="tfs", image="images/cloudmesh-tfs.sif", port=8500, gpu=0):
         self.INSTANCE = name
         self.EXEC = f"apptainer exec --nv instance://{self.INSTANCE}"
         self.IMAGE = image
         self.PORT = port
+        self.GPU = gpu
 
     def system(self, command=None, directory=None):
         """
@@ -101,7 +102,7 @@ class TFSInstance:
             result = self.instance_exec(command=f"sh {name}")
             return result
 
-    def start(self):
+    def start(self, gpu=None):
         """
         Starts the TFS instance.
         1. fisrt ist looks for containers with the same name and stops them
@@ -121,7 +122,12 @@ class TFSInstance:
 
         pwd = os.getcwd()
 
-        self.system(f"apptainer instance start --nv --home {pwd} {self.IMAGE} {self.INSTANCE} ")
+        if gpu is None:
+            gpu_visible_devices = ""
+        else:
+            gpu_visible_devices = f"CUDA_VISIBLE_DEVICES={gpu}"
+
+        self.system(f"{gpu_visible_devices} apptainer instance start --nv --home {pwd} {self.IMAGE} {self.INSTANCE} ")
 
         self.instance_exec(f"tensorflow_model_server --port={self.PORT} --rest_api_port=0 --model_config_file=benchmark/models.conf >& log-{self.INSTANCE}.log &")
         r = self.system("apptainer instance list")
@@ -133,7 +139,7 @@ class TFSInstance:
 # Usage
 name = "tfs-1"
 port = 8500
-tfs = TFSInstance(name=name, port=port)
+tfs = TFSInstance(name=name, port=port, gpu=0)
 tfs.start()
 
 script = f"""
