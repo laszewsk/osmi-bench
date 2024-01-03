@@ -167,3 +167,46 @@ print("servers are up")
 # """
 
 # r = tfs.instance_script(script)
+
+# os.system("apptainer exec --bind `pwd`:/home --pwd /home images/haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &")
+
+
+# pwd = os.getcwd()
+# command = f"apptainer instance start --nv --home {pwd}/benchmark images/haproxy_latest.sif haproxy"} 
+
+# print (command)
+
+
+#THIS WORKS
+#=========================================
+# source env.sh
+# login-2.sh
+# source env.sh
+# python test-gregor-ha-1.py
+# cd benchmark
+# apptainer instance start --nv --home `pwd` ../images/haproxy_latest.sif haproxy
+# apptainer exec instance://haproxy haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
+# apptainer instance list
+# python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8443
+# ==================================================   
+
+# assert instance name contains haproxy
+
+# cat haproxy.log 
+# Note: setting global.maxconn to 32747.
+# Available polling systems :
+#       epoll : pref=300,  test result OK
+#        poll : pref=200,  test result OK
+#      select : pref=150,  test result FAILED
+# Total: 3 (2 usable), will use epoll.
+
+# Available filters :
+# 	[BWLIM] bwlim-in
+# 	[BWLIM] bwlim-out
+# 	[CACHE] cache
+# 	[COMP] compression
+# 	[FCGI] fcgi-app
+# 	[SPOE] spoe
+# 	[TRACE] trace
+# Using epoll() as the polling mechanism.
+

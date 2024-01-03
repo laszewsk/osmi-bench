@@ -168,6 +168,7 @@ Now we need to launch TensorFlow Serving each one pinned to a specific GPU as fo
 b1>
     source env.sh
     sh login-2.sh
+    pip install -r reaquirements.txt
 
 node>
     nvidi-smi # to see if we have 2 gpus
@@ -182,8 +183,13 @@ Assuming the HAProxy singularity apptainer has been downloaded, we can launch th
 
 ```bash
 node>
+    cd benchmark
     apptainer exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
 ```
+
+
+???    apptainer run --bind `pwd`:/home --pwd /home ../images/haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
+
 
 gregor guesses:
 
