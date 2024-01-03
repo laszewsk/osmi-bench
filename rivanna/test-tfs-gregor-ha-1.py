@@ -143,8 +143,9 @@ class TFSInstance:
 
 # Usage
 
+n=2
 server = []     
-for i in range(0,2):
+for i in range(0,n):
     print (i)
 
     name = f"tfs-{i}"
@@ -153,7 +154,7 @@ for i in range(0,2):
     server.append(tfs)
     tfs.start(gpu=i, clean=True, wait=False)
 
-for i in range(0,2):
+for i in range(0,n):
     print (i)
     tfs = server[i]
     tfs.wait_for_port(port=8500+i)
@@ -182,7 +183,7 @@ print("servers are up")
 # source env.sh
 # login-2.sh
 # source env.sh
-# python test-gregor-ha-1.py
+# python test-tfs-gregor-ha-1.py
 # cd benchmark
 # apptainer instance start --nv --home `pwd` ../images/haproxy_latest.sif haproxy
 # apptainer exec instance://haproxy haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
