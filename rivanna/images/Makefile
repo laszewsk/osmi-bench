@@ -1,7 +1,6 @@
 IMAGE_TF=cloudmesh-tensorflow
 IMAGE_TFS=cloudmesh-tfs
 
-
 images: image-tf image-tfs
 
 

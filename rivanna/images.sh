@@ -18,5 +18,10 @@ apptainer pull docker://haproxy
 banner "PULL IMAGE tensorflow/serving:latest-gpu"
 apptainer pull docker://tensorflow/serving:latest-gpu
 
-make images
+banner "CREATE cloudmesh-tf"
+make image-tf
+
+banner "CREATE cloudmesh-tf"
+make image-tfs
+
 cd ..
