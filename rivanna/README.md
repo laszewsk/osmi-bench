@@ -5,128 +5,132 @@ for analyzing the performance of machine-learned surrogate models and is describ
 
 > Brewer, Wesley, Daniel Martinez, Mathew Boyer, Dylan Jude, Andy Wissink, Ben Parsons, Junqi Yin, and Valentine Anantharaj. "Production Deployment of Machine-Learned Rotorcraft Surrogate Models on HPC." In 2021 IEEE/ACM Workshop on Machine Learning in High Performance Computing Environments (MLHPC), pp. 21-32. IEEE, 2021.
 
-Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that OSMI-Bench differs from SMI-Bench described in the paper only in that the models that are used in OSMI are trained on synthetic data, whereas the models in SMI were trained using data from proprietary CFD simulations. Also, the OSMI medium and large models are very similar architectures as the SMI medium and large models, but not identical. 
+Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that OSMI-Bench differs from SMI-Bench described in the paper only in that the models that are used in OSMI are trained on synthetic data, whereas the models in SMI were trained using data from proprietary CFD simulations. Also, the OSMI medium and large models are very similar architectures as the SMI medium and large models, but not identical.
 
 # Instructions
 
 1. Setup python
 
-   ```bash
-   export BASE=/scratch/$USER
- 
-   mkdir -p $BASE
-   cd $BASE
-   git clone https://github.com/laszewsk/osmi-bench.git
-   cd osmi-bench
-   ```
-   
-2. Activate environment 
+```bash {"id":"01HKJ45W1RFD3Q4WQTF87XJ07A"}
+export BASE=/scratch/$USER
 
-   This installs python, aptainer, and sets up soome conveneient environment variables
+mkdir -p $BASE
+cd $BASE
+git clone https://github.com/laszewsk/osmi-bench.git
+cd osmi-bench
+```
 
-   ```bash
-   b1>
-     cd rivanna
-     source env.sh
-   ```
+2. Activate environment
+
+This installs python, aptainer, and sets up soome conveneient environment variables
+
+```bash {"id":"01HKJ45W1RFD3Q4WQTF900SG00"}
+b1>
+  cd rivanna
+  source env.sh
+```
 
 3. Prepare the containers
 
-   ```bash
-   rivanna>
-     sh images.sh
-     cd images
-     make images
-     cd ..
-   ```
-
-
+```bash
+rivanna>
+  sh images.sh
+  cd images
+  make images
+  cd ..
+```
 
 4. Interactive usage:
 
-    This is somehow wrong as we are not using the GPU when running python
 
-    ```bash
-    rivanna>
-      sh login-1.sh
-    ```
+```bash
+rivanna>
+  sh login-1.sh
+```
 
-   ```bash 
-   slurm-ijob-node>
-     hostname
-     nvidia-smi
-     module load apptainer
-   ```
+```bash
+slurm-ijob-node>
+  hostname
+  nvidia-smi
+  module load apptainer
+```
 
-5. Preparing model 
+5. Preparing model
 
-    Generate the model in the models directory using:
+Generate the model in the models directory using:
 
-    ```bash
-    slurm-ijob-node>
-        sh create-models.sh
-    ```
+```bash
+slurm-ijob-node>
+    sh create-models.sh
+```
 
-    Check the model output:
+Check the model output:
 
-    ```bash
-    slurm-ijob-node>
-        sh check-models.sh
-    ```
+```bash
+slurm-ijob-node>
+    sh check-models.sh
+```
 
-    > Note: we stand in dir rivanna
+> Note: we stand in dir rivanna
 
-    Update name and path in models.conf file. 
+Update name and path in models.conf file.
 
 ### Interactive Test Tensorflow serving
 
+node is an interactive node that you for example can optain with the script
 
-    ```bash`
-    node>
-        sh bin/convert-model-config.sh `pwd` benchmark/models.in.conf > benchmark/models.conf
-    ```
+```bash
+b1>
+    sh login-1.sh
+```
 
-    Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
+if you have not yet done so. It also requires that the models have been compiled as documented in the previous steps.
 
-    Launch TensorFlow Serving:
+```bash
+node>
+    sh bin/convert-model-config.sh `pwd` benchmark/models.in.conf > benchmark/models.conf
+```
 
-    ```bash
-    node b1>
-        apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
-    ```
+Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
+
+Launch TensorFlow Serving:
+
+```bash
+node>
+    apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
+```
 
 
-    ```bash
-    apptainer>  
-        rm log
-        tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log & 
-    ```
+```bash
+apptainer>  
+    rm -f log
+    tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log & 
+```
 
-    Make sure TF Serving started correctly:
+Make sure TF Serving started correctly:
 
-    ```bash
-    apptainer>
-        lsof -i :8500 
-    ```
-                                                                                                                                                                                                                                                                          
-    *Should list a process with status LISTEN if working correctly.*
+```bash
+apptainer>
+    lsof -i :8500 
+```
 
-    Send packets to be inference:
+*Should list a process with status LISTEN if working correctly.*
 
-    ```bash
-    apptainer>
-        cd benchmark
-        python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
-    ```
+Send packets to be inference:
 
-    Output of timings should be in file results.csv.
+```bash
+apptainer>
+    cd benchmark
+    python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
+```
+
+Output of timings should be in file results.csv.
 
 ### Scripted test with an instance
 
-
 To run this with a shell script you can do AFTER the login-1.sh
 
-```
+```sh {"id":"01HKJ45W1RFD3Q4WQTFMM2F9J0"}
 node>
     python test-tfs.py
 ```
@@ -135,24 +139,19 @@ GREGOR GOT TILL HERE
 
 1. Using multiple GPUs via HAProxy load balancer
 
-    To use multiple GPUs, we use HAProxy to round-robin the requests across the multiple GPUs. Assuming we have two GPUs we want to use, we first need to edit the file `haproxy-grpc.cfg`` to add lines for each of the inference servers: 
+   To use multiple GPUs, we use HAProxy to round-robin the requests across the multiple GPUs. Assuming we have two GPUs we want to use, we first need to edit the file `haproxy-grpc.cfg`` to add lines for each of the inference servers:
 
         server tfs0 localhost:8500
         server tfs1 localhost:8501
 
-(Note that it is currently setup for six servers, so the remaining four lines will need to be deleted or commented out for only two servers). 
+(Note that it is currently setup for six servers, so the remaining four lines will need to be deleted or commented out for only two servers).
 
 Now we need to launch TensorFlow Serving each one pinned to a specific GPU as follows:
-
-
-
-
 
     slurm-ijob-node>
         cd benchmark # if not already in it
         CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
         CUDA_VISIBLE_DEVICES=1 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
-
 
 Assuming the HAProxy singularity apptainer has been downloaded, we can launch the container using the following command:
 
@@ -161,18 +160,18 @@ Assuming the HAProxy singularity apptainer has been downloaded, we can launch th
 
 1. Fully automated launch process (from launch/batch node)
 
-    If running on more than one GPU, will need to launch up multiple TF Serving processes, each one bound to a specific GPU. This is what the script `1_start_tfs_servers.sh` will do. `2_start_load_balancers.sh` will launch HAProxy load balancers on each compute node. `3_run_benchmark.sh` automates the launch of multiple concurrent client threads for a sweep of batch sizes. Note, that `1_start_tfs_servers_erf.sh` uses explicit resource (ERF) indexing to launch the servers correctly across multiple GPUs and nodes on Summit. 
+   If running on more than one GPU, will need to launch up multiple TF Serving processes, each one bound to a specific GPU. This is what the script `1_start_tfs_servers.sh` will do. `2_start_load_balancers.sh` will launch HAProxy load balancers on each compute node. `3_run_benchmark.sh` automates the launch of multiple concurrent client threads for a sweep of batch sizes. Note, that `1_start_tfs_servers_erf.sh` uses explicit resource (ERF) indexing to launch the servers correctly across multiple GPUs and nodes on Summit.
 
         # launch the TFS servers
         ./1_start_tfs_servers.sh
-
+       
         # start the load balancer  
         ./2_start_load_balancers.sh
-
+       
         # run the benchmark sweep
         ./3_run_benchmarks.sh # currently this is using tfs_grpc_client.py
                               # but should be changed to using benchmark.py in the future
-
+       
         # run an individual benchmark
         python benchmark.py -b 32 -m small_lstm -n 1024
 

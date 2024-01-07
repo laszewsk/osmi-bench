@@ -1,5 +1,6 @@
 Bootstrap: docker
-From: tensorflow/serving:latest
+From: tensorflow/serving:latest-gpu
+# From:  nvcr.io/nvidia/tensorflow:23.12-tf2-py3
 
 %post
     apt-get update 
