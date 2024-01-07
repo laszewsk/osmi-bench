@@ -6,3 +6,7 @@ numpy
 tensorflow
 tensorflow-serving-api
 tqdm
+cloudmesh-common
+cloudmesh-cmd5
+cloudmesh-sys
+cloudmesh-apptainer

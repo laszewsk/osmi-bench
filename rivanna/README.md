@@ -132,10 +132,29 @@ To run this with a shell script you can do AFTER the login-1.sh
 
 ```sh {"id":"01HKJ45W1RFD3Q4WQTFMM2F9J0"}
 node>
+    source ./env.sh
     python test-tfs.py
 ```
 
-GREGOR GOT TILL HERE
+script source: [test-tfs-gregor.py](https://github.com/laszewsk/osmi-bench/blob/main/rivanna/test-tfs-gregor.py)
+
+### Scripted test with pythonic class for TFServing
+
+To showcase how to use apptainer instences within a python class to execute commands and scripts into a container started from an image we have developed
+
+script source: [test-tfs-gregor-2.py](https://github.com/laszewsk/osmi-bench/blob/main/rivanna/test-tfs-gregor-2.py)
+
+
+To run this with a shell script you can do AFTER the login-1.sh
+
+```
+node>
+    source ./env.sh
+    python test-tfs-gregor-2.py
+```
+
+
+### GREGOR GOT TILL HERE
 
 1. Using multiple GPUs via HAProxy load balancer
 
@@ -148,15 +167,50 @@ GREGOR GOT TILL HERE
 
 Now we need to launch TensorFlow Serving each one pinned to a specific GPU as follows:
 
+<<<<<<< HEAD
     slurm-ijob-node>
         cd benchmark # if not already in it
         CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
         CUDA_VISIBLE_DEVICES=1 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
+=======
+
+```bash
+b1>
+    source env.sh
+    sh login-2.sh
+    pip install -r reaquirements.txt
+
+node>
+    nvidi-smi # to see if we have 2 gpus
+
+node>
+    cd benchmark # if not already in it
+    CUDA_VISIBLE_DEVICES=0 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8500 --model_config_file=models.conf > tfs0.log 2>&1 &
+    CUDA_VISIBLE_DEVICES=1 apptainer run --home `pwd` --nv ../images/cloudmesh-tfs.sif tensorflow_model_server --port=8501 --model_config_file=models.conf > tfs1.log 2>&1 &
+```
+>>>>>>> 9700deb4bec5e5794c95524e6265ab90ece17b87
 
 Assuming the HAProxy singularity apptainer has been downloaded, we can launch the container using the following command:
 
-    slurm-ijob-node>
-        apptainer exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
+```bash
+node>
+    cd benchmark
+    apptainer exec --bind `pwd`:/home --pwd /home haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
+```
+
+
+???    apptainer run --bind `pwd`:/home --pwd /home ../images/haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &
+
+
+gregor guesses:
+
+
+    ```bash
+    apptainer>
+        cd benchmark
+        python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8443
+    ```
+
 
 1. Fully automated launch process (from launch/batch node)
 
