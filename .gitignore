@@ -1,6 +1,16 @@
 *.sif
 __pycache__
 *~
+models/large_tcnn/*
+models/medium_cnn/*
+models/small_lstm/*
 models/large_tcnn
 models/medium_cnn
 models/small_lstm
+.bash_history
+.keras/
+.python_history
+apptainer.yaml
+tmp-*
+log
+*.log

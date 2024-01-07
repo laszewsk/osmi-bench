@@ -81,48 +81,47 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 ### Interactive Test Tensorflow serving
 
 
-    ```bash`
-    node>
-        sh bin/convert-model-config.sh `pwd` benchmark/models.in.conf > benchmark/models.conf
-    ```
+```bash`
+node>
+    sh bin/convert-model-config.sh `pwd` benchmark/models.in.conf > benchmark/models.conf
+```
 
-    Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
+Make sure name of model is defined in models parameter in tfs_grpc_client.py. 
 
-    Launch TensorFlow Serving:
+Launch TensorFlow Serving:
 
-    ```bash
-    node b1>
-        apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
-    ```
+```bash
+node b1>
+    apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
+```
 
 
-    ```bash
-    apptainer>  
-        rm log
-        tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log & 
-    ```
+```bash
+apptainer>  
+    rm log
+    tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log & 
+```
 
-    Make sure TF Serving started correctly:
+Make sure TF Serving started correctly:
 
-    ```bash
-    apptainer>
-        lsof -i :8500 
-    ```
-                                                                                                                                                                                                                                                                          
-    *Should list a process with status LISTEN if working correctly.*
+```bash
+apptainer>
+    lsof -i :8500 
+```
+                                                                                                                                                                                                                                                                        
+*Should list a process with status LISTEN if working correctly.*
 
-    Send packets to be inference:
+Send packets to be inference:
 
-    ```bash
-    apptainer>
-        cd benchmark
-        python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
-    ```
+```bash
+apptainer>
+    cd benchmark
+    python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
+```
 
-    Output of timings should be in file results.csv.
+Output of timings should be in file results.csv.
 
 ### Scripted test with an instance
-
 
 To run this with a shell script you can do AFTER the login-1.sh
 
