@@ -11,7 +11,7 @@ Available from https://ieeexplore.ieee.org/abstract/document/9652868. Note that 
 
 1. Setup python
 
-```bash {"id":"01HKJ45W1RFD3Q4WQTF87XJ07A"}
+```bash
 export BASE=/scratch/$USER
 
 mkdir -p $BASE
@@ -24,7 +24,7 @@ cd osmi-bench
 
 This installs python, aptainer, and sets up soome conveneient environment variables
 
-```bash {"id":"01HKJ45W1RFD3Q4WQTF900SG00"}
+```bash
 b1>
   cd rivanna
   source env.sh
@@ -103,8 +103,8 @@ node>
 
 ```bash
 apptainer>  
-    rm -f log
-    tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log & 
+    rm -f tfs.log
+    tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& tfs.log & 
 ```
 
 Make sure TF Serving started correctly:
@@ -130,7 +130,7 @@ Output of timings should be in file results.csv.
 
 To run this with a shell script you can do AFTER the login-1.sh
 
-```sh {"id":"01HKJ45W1RFD3Q4WQTFMM2F9J0"}
+```sh
 node>
     source ./env.sh
     python test-tfs.py
