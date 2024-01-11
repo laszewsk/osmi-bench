@@ -23,8 +23,8 @@ module load apptainer
 echo "done"
 
 
-echo -n "Load   python/3.11.4 ... " 
-module load gcc/11.4.0  openmpi/4.1.4 python/3.11.4
+echo -n "Load   python/3.11.4, cuda/12.2.2 ... " 
+module load gcc/11.4.0  openmpi/4.1.4 python/3.11.4 cuda/12.2.2
 echo "done"
 echo -n "Create $USER_SCRATCH/OSMI/bin/python ... "
 python -m venv $USER_SCRATCH/OSMI # takes about 5.2s

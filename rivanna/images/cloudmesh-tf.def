@@ -1,0 +1,37 @@
+Bootstrap: docker
+# From:  nvcr.io/nvidia/tensorflow:23.12-tf2-py3
+# Matrix: https://docs.nvidia.com/deeplearning/frameworks/support-matrix/index.html
+# Tags: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/tensorflow/tags
+# From:  nvcr.io/nvidia/tensorflow:23.12-tf2-py3 # CUDA >=12.3.2 driver >=545 
+# From:  nvcr.io/nvidia/tensorflow:23.10-tf2-py3 # CUDA >=12.2.2 driver >=535, rivanna Jan 2024
+
+
+
+# From: tensorflow/serving:latest-gpu
+# From: tensorflow/tensorflow:2.14.0-gpu
+
+# Python 3.11.0rc1
+# Tensorflow 2.14.0
+
+From:  nvcr.io/nvidia/tensorflow:23.10-tf2-py3 
+# CUDA >=12.2.2 driver >=535, rivanna Jan 2024
+
+
+%post
+    apt-get update 
+	apt install lsof -y
+	apt install git -y
+	
+	pip install pip -U
+	pip install numpy
+	pip install matplotlib
+	pip install pandas
+	pip install scikit-learn
+	pip install opencv-python
+	pip install git+https://github.com/mlperf/logging.git
+	#pip install cloudmesh-common
+	#pip install cloudmesh-gpu
+
+	pip install cloudmesh-common==4.3.195
+	pip install cloudmesh-gpu==4.3.23
+	pip install tensorflow-serving-api

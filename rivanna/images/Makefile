@@ -1,23 +1,24 @@
-IMAGE_TF=cloudmesh-tensorflow
-IMAGE_TFS=cloudmesh-tfs
+VERSION=23-10-nv
+IMAGE_TF=cloudmesh-tf-${VERSION}
+IMAGE_TFS=cloudmesh-tfs-${VERSION}
 
 images: image-tf image-tfs
 
 
-image-tf: cloudmesh-tensorflow.def
-	apptainer build --force ${IMAGE_TF}.sif ${IMAGE_TF}.def
+image-tf: ${IMAGE_TF}.def
+	-apptainer build --force ${IMAGE_TF}.sif ${IMAGE_TF}.def
 
 shell-tf:
-	singularity shell --nv ${IMAGE_TF}.sif
+	-singularity shell --nv ${IMAGE_TF}.sif
 
-image-tfs: cloudmesh-tfs.def
-	apptainer build --force ${IMAGE_TFS}.sif ${IMAGE_TFS}.def
+image-tfs: ${IMAGE_TFS}.def
+	-apptainer build --force ${IMAGE_TFS}.sif ${IMAGE_TFS}.def
 
 shell-tfs:
-	singularity shell --nv ${IMAGE_TFS}.sif
+	-singularity shell --nv ${IMAGE_TFS}.sif
 
 image-haproxy: haproxy_latest.sif
-	apptainer pull docker://haproxy:latest
+	-apptainer pull docker://haproxy:latest
 
 
 # watch: 

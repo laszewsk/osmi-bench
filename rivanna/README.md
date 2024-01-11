@@ -46,10 +46,10 @@ rivanna>
 ```bash
 rivanna>
   sh login-1.sh
-```
+```sh
 
 ```bash
-slurm-ijob-node>
+node>
   hostname
   nvidia-smi
   module load apptainer
@@ -60,14 +60,14 @@ slurm-ijob-node>
 Generate the model in the models directory using:
 
 ```bash
-slurm-ijob-node>
+node>
     sh create-models.sh
 ```
 
 Check the model output:
 
 ```bash
-slurm-ijob-node>
+node>
     sh check-models.sh
 ```
 
@@ -97,7 +97,7 @@ Launch TensorFlow Serving:
 
 ```bash
 node>
-    apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
+    apptainer shell --home `pwd` --nv images/cloudmesh-tfs-23-10-nv.sif    
 ```
 
 
