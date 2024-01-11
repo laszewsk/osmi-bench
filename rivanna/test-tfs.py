@@ -59,7 +59,7 @@ assert INSTANCE not in r
 pwd = os.getcwd()
 
 #        apptainer shell --home `pwd` --nv images/cloudmesh-tfs.sif 
-exec(f"apptainer instance start --nv --home {pwd} images/cloudmesh-tfs.sif {INSTANCE} ")
+exec(f"apptainer instance start --nv --home {pwd} images/cloudmesh-tfs-23-10-nv.sif {INSTANCE} ")
 
 app_exec(f"tensorflow_model_server --port=8500 --rest_api_port=0 --model_config_file=benchmark/models.conf >& log &")
 r = exec("apptainer instance list")
