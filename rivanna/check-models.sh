@@ -27,15 +27,18 @@ banner() {
 # banner "Checking completed"
 
 
+CONTAINER="../images/cloudmesh-tfs-23-10-nv.sif"
+
 cd models
+
 banner small_lstm
-apptainer exec --nv ../images/cloudmesh-tfs.sif saved_model_cli show --all --dir small_lstm/1
+apptainer exec --nv $CONTAINER saved_model_cli show --all --dir small_lstm/1
 
 banner medium_cnn
-apptainer exec --nv ../images/cloudmesh-tfs.sif saved_model_cli show --all --dir medium_cnn/1
+apptainer exec --nv $CONTAINER saved_model_cli show --all --dir medium_cnn/1
 
 banner large_tcnn   
-apptainer exec --nv ../images/cloudmesh-tfs.sif saved_model_cli show --all --dir large_tcnn/1
+apptainer exec --nv $CONTAINER saved_model_cli show --all --dir large_tcnn/1
 
 banner "Checking completed"
 

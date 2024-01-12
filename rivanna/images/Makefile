@@ -2,7 +2,7 @@ VERSION=23-10-nv
 IMAGE_TF=cloudmesh-tf-${VERSION}
 IMAGE_TFS=cloudmesh-tfs-${VERSION}
 
-images: image-tf image-tfs
+images: image-tfs
 
 
 image-tf: ${IMAGE_TF}.def

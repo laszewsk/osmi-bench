@@ -22,16 +22,19 @@ curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.re
     apt install -y python3-pip
     # pip install pip -U
 
+
+    #pip install tensorflow[and-cuda]
+    pip install tensorflow-serving-api[and-cuda]
+
+
     pip install grpcio
     pip install numpy
     pip install requests
     pip install tqdm
 
-    #pip install tensorflow[and-cuda]
-
-    pip install tensorflow-serving-api
     
 	pip install cloudmesh-common
 	pip install cloudmesh-gpu
-
+    pip install cloudmesh-apptainer
+    
     #smartredis==0.3.1
