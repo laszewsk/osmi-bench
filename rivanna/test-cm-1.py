@@ -26,23 +26,17 @@ class TFSInstance:
 
     def __init__(self, name="tfs", image="cloudmesh-tfs-23-10-nv.sif", port=8500, gpu=0):
 
-        print ("YYYYYYYYY")
         self.apptainer = Apptainer()
         self.apptainer.add_location("./images")
         images = self.apptainer.images
-
-        print (images)
-        print ("UUUUUU")
 
         self.name = name
         self.image = image
         self.port = port
         self.pgpu = gpu
 
-        print ("image", self.image)
         
         print (self.apptainer.find_image(self.image, smart=True))
-        print ("PPPP")
     
 
     def exec(self, command=None, bind=None, nv=True, home=None, verbose=True):
@@ -104,6 +98,19 @@ class TFSInstance:
             result = self.instance_exec(command=f"sh {name}")
             return result
 
+    def stop(self, dt=0):
+            try:
+                r = self.apptainer.stop(self.name)
+            except:
+                r = ""
+
+            time.sleep(dt)
+
+            assert "no instance found" not in r
+
+            r = self.apptainer.list()
+            assert self.name not in r
+
     def start(self, gpu=None, clean=False, wait=True):
         """
         Starts the TFS instance.
@@ -113,16 +120,7 @@ class TFSInstance:
 
         """
         if clean:
-            try:
-                r = self.apptainer.stop(self.name)
-            except:
-                r = ""
-
-            assert "no instance found" not in r
-
-            r = self.apptainer.list()
-            assert self.name not in r
-
+            self.stop(dt=0)
             
         pwd = os.getcwd()
         
@@ -141,9 +139,22 @@ class TFSInstance:
 
         print ("Server is up")
 
+
+def print_instances(tfs):
+    instances = tfs.apptainer.list()
+    for i in range(0,n):
+        for key in ["logErrPath", "logOutPath", "ip"]:
+            del instances[i][key]
+    print(
+        tabulate(
+            instances, headers="keys", tablefmt="simple_grid", showindex="always"
+        )
+    )
+
 # Usage
 
 # START SERVERS
+banner("Start servers") 
 n=1
 server = []     
 for i in range(0,n):
@@ -154,30 +165,26 @@ for i in range(0,n):
     server.append(tfs)
     tfs.start(gpu=i, clean=True, wait=False)
 
-instances = tfs.apptainer.list()
-for i in range(0,n):
-    for key in ["logErrPath", "logOutPath", "ip"]:
-        del instances[i][key]
-print(
-    tabulate(
-        instances, headers="keys", tablefmt="simple_grid", showindex="always"
-    )
-)
 
+print_instances(tfs)
 
 # WAIT FOR SERVERS TO BE READY
+banner("Wait for servers to be ready")
 for i in range(0,n):
-    print ("Wait for TFS {i} to b ready ...", end="")
+    print (f"Wait for TFS {i} to b ready ...", end="")
     server[i].wait_for_port()
 print("servers are up")
 
 
 # SHUTDOWN SERVERS
-#for i in range(0,n):
-#    print ("TFS {i} to b ready ...", end="")
-#    server[i].stop()
-#    print (" ok")
-    
+banner("Shutdown servers")
+for i in range(0,n):
+    print (f"TFS {i} to b ready ...", end="")
+    server[i].stop()
+    print (" ok")
+
+time.sleep(1)
+os.system("cma list")
 
 # script = f"""
 # #!/bin/sh
