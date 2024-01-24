@@ -176,6 +176,38 @@ for i in range(0,n):
 print("servers are up")
 
 
+# START HAPROXY
+
+# storr one or 0 haproxy
+
+
+# benchamrk
+
+# if not haproxy (haproxy = 0)
+#    python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
+# elif haproxy = 1:
+#      python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8443
+
+
+
+script = f"""
+#!/bin/sh
+cd benchmark
+python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}
+"""
+
+# BENCHMARK ON n SERVERS
+banner("Benchmark")
+for i in range(0,n):
+    name = f"tfs-{i}"
+    port = 8500 + i
+    command = f"python3 benchmark/tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}"
+    print (f"Benchmark {i} ...", end="")
+    server[i].exec(command=command)
+    print (" ok")
+
+
+
 # SHUTDOWN SERVERS
 banner("Shutdown servers")
 for i in range(0,n):
@@ -186,11 +218,12 @@ for i in range(0,n):
 time.sleep(1)
 os.system("cma list")
 
-# script = f"""
-# #!/bin/sh
-# cd benchmark
-# python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}
-# """
+
+
+
+
+
+
 
 # r = tfs.instance_script(script)
 
