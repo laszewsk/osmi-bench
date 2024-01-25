@@ -14,11 +14,11 @@ from cloudmesh.common.util import writefile
 
 class HAProxyServer:
 
-    def __init__(self, name="haproxy", port=8443, image="haproxy-latest.sif", logfile="haproxy.log"):
+    def __init__(self, name="haproxy", port=8443, image="images/haproxy_latest.sif", logfile="haproxy.log"):
 
         self.apptainer = Apptainer()
         self.apptainer.add_location("./images")
-        images = self.apptainer.images
+        self.images = self.apptainer.images
 
         self.name = name
         self.port = port
@@ -54,7 +54,7 @@ class HAProxyServer:
 
         writefile(filename, configuration)
 
-    def start(self):
+    def start(self, clean=False, dt=0):
         pass    
         if clean:
             self.stop(dt=0)
@@ -64,6 +64,7 @@ class HAProxyServer:
         os.system(f"rm -f log-{self.name}.log")
 
         image_path = self.image["path"]
+        print ("IIII", image_path)
         print ("start ...", end="")
         stdout, stderr= self.apptainer.start(name=self.name, home=pwd, image=image_path)
         print ("ok")
@@ -314,6 +315,12 @@ for i in range(0,n):
 print("servers are up")
 
 
+haproxy = HAProxyServer(name="haproxy", port=8443, image="haproxy_latest.sif", logfile="haproxy.log")
+haproxy.create_config(ports=["8500"], host="localhost", filename="haproxy-grpc.cfg")
+haproxy.start()
+
+benchmark_port = 8443
+
 # START HAPROXY
 
 # storr one or 0 haproxy
@@ -338,10 +345,11 @@ python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}
 banner("Benchmark")
 for i in range(0,n):
     name = f"tfs-{i}"
-    port = 8500 + i
-    command = f"python3 benchmark/tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}"
+    # port = 8500 + i
+    command = f"python benchmark/tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{benchmark_port}"
     print (f"Benchmark {i} ...", end="")
-    server[i].exec(command=command)
+    #server[i].exec(command=command)
+    os.system(command)
     print (" ok")
 
 
