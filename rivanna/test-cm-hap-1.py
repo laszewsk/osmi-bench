@@ -4,6 +4,13 @@ import time
 from cloudmesh.common.util import banner
 from cloudmesh.apptainer.apptainer import Apptainer
 from tabulate import tabulate
+import textwrap
+from cloudmesh.common.util import writefile
+
+# TODO: make sure the config files are unique for each instance
+# TODO: make sure the ports are unique for each instance
+# TODO: make sure the names are unique for each instance
+# TODO: make sure the script names  are unique whenever a scipt is used
 
 class HAProxyServer:
 
@@ -15,6 +22,32 @@ class HAProxyServer:
 
         self.name = name
         self.image = self.apptainer.find_image(image, smart=True)
+
+    def create_config(self, port, tfs_ports, host="localhost", filename="haproxy-grpc.cfg"):
+        configuration = textwrap.dedent(f"""
+            global
+            tune.ssl.default-dh-param 1024
+            
+            defaults
+            timeout connect 10000ms
+            timeout client 60000ms
+            timeout server 60000ms
+            
+            frontend fe_https
+            mode tcp
+            bind 0.0.0.0:{port} npn spdy/2 alpn h2,http/1.1
+            default_backend be_grpc
+
+            backend be_grpc
+            mode tcp
+            balance roundrobin
+            """)
+        
+        for tfs_port in tfs_ports:
+            server = f"server tfs0 localhost:tfs_port"
+            configuration += server
+
+        writefile(filename, configuration)
 
     def start(self):
         pass    
