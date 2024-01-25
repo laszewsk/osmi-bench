@@ -14,16 +14,21 @@ from cloudmesh.common.util import writefile
 
 class HAProxyServer:
 
-    def __init__(self, name="haproxy", image="haproxy-latest.sif"):
+    def __init__(self, name="haproxy", port=8443, image="haproxy-latest.sif", logfile="haproxy.log"):
 
         self.apptainer = Apptainer()
         self.apptainer.add_location("./images")
         images = self.apptainer.images
 
         self.name = name
+        self.port = port
         self.image = self.apptainer.find_image(image, smart=True)
+        self.ports = None
+        self.filename = None
 
-    def create_config(self, port, tfs_ports, host="localhost", filename="haproxy-grpc.cfg"):
+    def create_config(self, ports=["8500"], host="localhost", filename="haproxy-grpc.cfg"):
+        self.ports = ports
+        self.filename = filename
         configuration = textwrap.dedent(f"""
             global
             tune.ssl.default-dh-param 1024
@@ -35,7 +40,7 @@ class HAProxyServer:
             
             frontend fe_https
             mode tcp
-            bind 0.0.0.0:{port} npn spdy/2 alpn h2,http/1.1
+            bind 0.0.0.0:{self.port} npn spdy/2 alpn h2,http/1.1
             default_backend be_grpc
 
             backend be_grpc
@@ -43,8 +48,8 @@ class HAProxyServer:
             balance roundrobin
             """)
         
-        for tfs_port in tfs_ports:
-            server = f"server tfs0 localhost:tfs_port"
+        for port in ports:
+            server = f"server tfs0 localhost:{port}"
             configuration += server
 
         writefile(filename, configuration)
@@ -65,7 +70,9 @@ class HAProxyServer:
         print (stdout)
 
 
-        command = "haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &"
+        command = "haproxy -d -f {self.filename} > {self.logfile} 2>&1 &"
+
+        banner("Start HAProxy")
 
         self.apptainer.exec(name=self.name, command=command)
         #r = self.apptainer.system("apptainer instance list")
