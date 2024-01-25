@@ -5,6 +5,104 @@ from cloudmesh.common.util import banner
 from cloudmesh.apptainer.apptainer import Apptainer
 from tabulate import tabulate
 
+class HAProxyServer:
+
+    def __init__(self, name="haproxy", image="haproxy-latest.sif"):
+
+        self.apptainer = Apptainer()
+        self.apptainer.add_location("./images")
+        images = self.apptainer.images
+
+        self.name = name
+        self.image = self.apptainer.find_image(image, smart=True)
+
+    def start(self):
+        pass    
+        if clean:
+            self.stop(dt=0)
+            
+        pwd = os.getcwd()
+        
+        os.system(f"rm -f log-{self.name}.log")
+
+        image_path = self.image["path"]
+        print ("start ...", end="")
+        stdout, stderr= self.apptainer.start(name=self.name, home=pwd, image=image_path)
+        print ("ok")
+        print (stdout)
+
+
+        command = "haproxy_latest.sif haproxy -d -f haproxy-grpc.cfg > haproxy.log 2>&1 &"
+
+        self.apptainer.exec(name=self.name, command=command)
+        #r = self.apptainer.system("apptainer instance list")
+        #
+        #if wait:
+        #    self.wait_for_port(name=self.name, port=self.port)
+        #
+        #print ("Server is up")
+
+        # figure out a way to see if haproxy is up and working
+
+
+
+    def stop(self, dt=0):
+            try:
+                r = self.apptainer.stop(self.name)
+            except:
+                r = ""
+
+            time.sleep(dt)
+
+            assert "no instance found" not in r
+
+            r = self.apptainer.list()
+            assert self.name not in r
+
+    def status(self):
+        pass
+
+        
+    def exec(self, command=None, bind=None, nv=False, home=None, verbose=True):
+        """
+        Executes a command on the TFS instance.
+
+        Args:
+            command (str, optional): The command to execute. Defaults to None.
+            
+        Returns:
+            str: The output of the executed command.
+
+        """
+        stdout, stderr = self.apptainer.exec(name=self.name, command=command, bind=bind, nv=nv, home=home, verbose=True)
+
+        if verbose:        
+            banner(f"stdout {command}")
+            print (stdout)
+            banner(f"stderr {command}")
+            print (stderr)
+        return stdout, stderr
+
+
+    def script(self, script, name=None):
+        """
+        Executes a script on the haproxy instance.
+
+        Args:
+            script (str): The script to execute. It can be multiline.
+            name (str, optional): The name of the script file. Defaults to "tmp-benchmark.sh".
+
+        Returns:
+            str: The output of the executed script.
+
+        """
+        name = name or f"tmp-script-{self.name}.sh"
+        with open(name, "w") as file:
+            file.write(script)
+        result = self.instance_exec(command=f"sh {name}")
+        return result
+
+
 class TFSInstance:
     """
     Represents a TensorFlow Serving (TFS) instance.
