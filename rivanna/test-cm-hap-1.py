@@ -41,6 +41,7 @@ class HAProxyServer:
             frontend fe_https
             mode tcp
             bind 0.0.0.0:{self.port} npn spdy/2 alpn h2,http/1.1
+            #bind *:{self.port} npn spdy/2 alpn h2,http/1.1
             default_backend be_grpc
 
             backend be_grpc
@@ -355,13 +356,13 @@ for i in range(0,n):
 
 
 # SHUTDOWN SERVERS
-banner("Shutdown servers")
-for i in range(0,n):
-    print (f"TFS {i} to b ready ...", end="")
-    server[i].stop()
-    print (" ok")
+#banner("Shutdown servers")
+#for i in range(0,n):
+#    print (f"TFS {i} to b ready ...", end="")
+#    server[i].stop()
+#    print (" ok")
 
-time.sleep(1)
+#time.sleep(1)
 os.system("cma list")
 
 
