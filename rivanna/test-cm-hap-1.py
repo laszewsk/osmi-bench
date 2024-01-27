@@ -379,13 +379,11 @@ haproxy.start()
 # elif haproxy = 1:
 #      python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8443
 
-
-
-script = f"""
-#!/bin/sh
-cd benchmark
-python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}
-"""
+#script = f"""
+##!/bin/sh
+#cd benchmark
+#python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}
+#"""
 
 # BENCHMARK ON n SERVERS
 banner("Benchmark")
