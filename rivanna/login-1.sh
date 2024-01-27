@@ -1,4 +1,4 @@
-ijob -c 4  \
+ijob -c 6  \
             --gres=gpu:a100:1 \
             --time=3:00:00 \
             --reservation=bi_fox_dgx \

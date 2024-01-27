@@ -6,6 +6,8 @@ from cloudmesh.apptainer.apptainer import Apptainer
 from tabulate import tabulate
 import textwrap
 from cloudmesh.common.util import writefile
+import sys
+
 
 # TODO: make sure the config files are unique for each instance
 # TODO: make sure the ports are unique for each instance
@@ -25,6 +27,35 @@ class HAProxyServer:
         self.image = self.apptainer.find_image(image, smart=True)
         self.ports = None
         self.filename = None
+        self.logfile = "haproxy.log"
+
+    
+    def wait_for_port(self, port= None, dt=1, verbose=False):
+        """
+        TODO: THIS WILL NOT WORK
+
+        Waits for the specified port to be in the LISTEN state in the instance.
+
+        Args:
+            port (int, optional): The port number to wait for. Defaults to 8500.
+            dt (int, optional): The time interval between checks in seconds. Defaults to 1.
+
+        """
+        port = port or self.port
+        while True:
+            try:
+                stdout, stderr = self.exec(command=f"lsof -i :{port}", verbose=verbose)
+            except:
+                stdout = ""
+                stderr = ""
+
+            if '(LISTEN)' in stdout:
+                break
+            time.sleep(dt)
+
+    def check_config(self):
+        command = "haproxy -f haproxy-grpc.cfg -c"
+        return self.apptainer.exec(name=self.name, command=command)
 
     def create_config(self, ports=["8500"], host="localhost", filename="haproxy-grpc.cfg"):
         self.ports = ports
@@ -52,6 +83,7 @@ class HAProxyServer:
         for port in ports:
             server = f"server tfs0 localhost:{port}"
             configuration += server
+        configuration += "\n"
 
         writefile(filename, configuration)
 
@@ -72,7 +104,7 @@ class HAProxyServer:
         print (stdout)
 
 
-        command = "haproxy -d -f {self.filename} > {self.logfile} 2>&1 &"
+        command = f"haproxy -d -f {self.filename} > {self.logfile} 2>&1 &"
 
         banner("Start HAProxy")
 
@@ -316,11 +348,24 @@ for i in range(0,n):
 print("servers are up")
 
 
-haproxy = HAProxyServer(name="haproxy", port=8443, image="haproxy_latest.sif", logfile="haproxy.log")
+port = 8443
+haproxy = HAProxyServer(name="haproxy", port=port, image="haproxy_latest.sif", logfile="haproxy.log")
 haproxy.create_config(ports=["8500"], host="localhost", filename="haproxy-grpc.cfg")
+stdout, stderr = haproxy.check_config()
+if stderr != "":
+    banner("STDOUT")
+    print (stdout)
+    banner("STDERR")
+    print (stderr)
+
+    print ("ERROR: haproxy config is not valid")
+    sys.exit()  
+
+
 haproxy.start()
 
-benchmark_port = 8443
+#haproxy.wait_for_port(port=port) 
+
 
 # START HAPROXY
 
@@ -347,20 +392,22 @@ banner("Benchmark")
 for i in range(0,n):
     name = f"tfs-{i}"
     # port = 8500 + i
-    command = f"python benchmark/tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{benchmark_port}"
+    command = f"python benchmark/tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}"
     print (f"Benchmark {i} ...", end="")
     #server[i].exec(command=command)
     os.system(command)
     print (" ok")
 
-
-
 # SHUTDOWN SERVERS
-#banner("Shutdown servers")
-#for i in range(0,n):
-#    print (f"TFS {i} to b ready ...", end="")
-#    server[i].stop()
-#    print (" ok")
+banner("Shutdown servers")
+for i in range(0,n):
+    print (f"TFS {i} to b ready ...", end="")
+    server[i].stop()
+    print (" ok")
+
+# SHUTDOWN HAPROXY
+banner("Shutdown haproxy")
+haproxy.stop()
 
 #time.sleep(1)
 os.system("cma list")
