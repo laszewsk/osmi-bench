@@ -7,7 +7,7 @@ from tabulate import tabulate
 import textwrap
 from cloudmesh.common.util import writefile
 import sys
-
+from cloudmesh.common.util import readfile
 
 # TODO: make sure the config files are unique for each instance
 # TODO: make sure the ports are unique for each instance
@@ -27,7 +27,7 @@ class HAProxyServer:
         self.image = self.apptainer.find_image(image, smart=True)
         self.ports = None
         self.filename = None
-        self.logfile = "haproxy.log"
+        self.logfile = f"{name}.log"
 
     
     def wait_for_port(self, port= None, dt=1, verbose=False):
@@ -94,7 +94,7 @@ class HAProxyServer:
             
         pwd = os.getcwd()
         
-        os.system(f"rm -f log-{self.name}.log")
+        os.system(f"rm -f {self.logfile}")
 
         image_path = self.image["path"]
         print ("IIII", image_path)
@@ -196,7 +196,7 @@ class TFSInstance:
 
     """        
 
-    def __init__(self, name="tfs", image="cloudmesh-tfs-23-10-nv.sif", port=8500, gpu=0):
+    def __init__(self, name="tfs-0", image="cloudmesh-tfs-23-10-nv.sif", port=8500, gpu=0):
 
         self.apptainer = Apptainer()
         self.apptainer.add_location("./images")
@@ -206,8 +206,7 @@ class TFSInstance:
         self.image = image
         self.port = port
         self.pgpu = gpu
-
-        self.log = None
+        self.log = f"{name}-serving.log"
         
         print (self.apptainer.find_image(self.image, smart=True))
     
@@ -292,14 +291,10 @@ class TFSInstance:
         3. ist starts the container 
 
         """
-        
-        self.log = f"{self.name}-status.log"
-        
         if clean:
             self.stop(dt=0)
             
         pwd = os.getcwd()
-        
         os.system(f"rm -f {self.log}")
 
         print ("start ...", end="")
