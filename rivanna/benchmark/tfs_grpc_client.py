@@ -9,6 +9,10 @@ from tqdm import tqdm
 import tensorflow as tf
 from tensorflow_serving.apis import predict_pb2
 from tensorflow_serving.apis import prediction_service_pb2_grpc
+from cloudmesh.common.StopWatch import StopWatch
+from cloudmesh.common.StopWatch import progress
+
+from cloudmesh.common.util import banner
 
 
 # Parse the command-line arguments
@@ -21,8 +25,12 @@ parser.add_argument('-o', '--outfile', default='results.csv', help='name of outp
 parser.add_argument('-v', '--verbose', action='store_true', help='verbose output')
 parser.add_argument('-vv', action='store_true', help='extra verbose output')
 parser.add_argument('--redux', action='store_true', help='divide args.n by args.batch')
+parser.add_argument('--id', required=False, default="0", help='id of the benchmark client')
 args = parser.parse_args()
 
+args.id = int(args.id)  
+
+StopWatch.start(f"total")
 hostport = args.server
 print(hostport)
 
@@ -43,6 +51,7 @@ models = {
           'lwmodel': isd('dense_input', (args.batch, 1426), np.float32),
          }
 
+StopWatch.start("data")
 times = list()
 results = list()
 
@@ -52,10 +61,14 @@ print("payload size in bytes:", payload_size)
 
 assert payload_size < MAX_MESSAGE_LENGTH, f"Exceeded gRPC payload limit of {MAX_MESSAGE_LENGTH}"
 
+
 if args.redux:
     num_requests = int(args.n/args.batch)
 else:
     num_requests = args.n
+StopWatch.stop("data")
+
+
 
 for _ in tqdm(range(num_requests)):
     data = np.array(np.random.random(models[args.model]['shape']), dtype=models[args.model]['dtype'])
@@ -69,10 +82,11 @@ for _ in tqdm(range(num_requests)):
     tok = time.perf_counter()
     times.append(tok - tik)
 
-
 elapsed = sum(times)
 avg_inference_latency = elapsed/num_requests
 
+
+StopWatch.start(f"log")
 print(f"elapsed time: {elapsed:.1f}s | average inference latency: {avg_inference_latency:.3f}s | 99th percentile latency: {np.percentile(times, 99):.3f}s | ips: {1/avg_inference_latency:.1f}")
 
 write_header = True if not os.path.exists(args.outfile) else False
@@ -80,4 +94,11 @@ write_header = True if not os.path.exists(args.outfile) else False
 with open(args.outfile, 'a+') as f:
     if write_header: f.write("# batch size,elapse,avg_inf_latency,99% tail latency,throughput\n")
     f.write(f"{args.batch},{elapsed:.1f},{avg_inference_latency:.3f},{np.percentile(times, 99):.3f},{1/avg_inference_latency:.1f}\n")
+
+StopWatch.stop(f"log")  
+            
+StopWatch.stop(f"total")
+StopWatch.benchmark(tag=args.id)
+
+progress(status="done", progress=100)
 

@@ -401,7 +401,7 @@ banner("Benchmark")
 for i in range(0,n):
     name = f"tfs-{i}"
     # port = 8500 + i
-    command = f"python benchmark/tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}"
+    command = f"python benchmark/tfs_grpc_client.py --id {i} -m medium_cnn -b 32 -n 10 localhost:{port}"
     print (f"Benchmark {i} ...", end="")
     #server[i].exec(command=command)
     os.system(command)
