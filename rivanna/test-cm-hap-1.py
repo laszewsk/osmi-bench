@@ -207,6 +207,7 @@ class TFSInstance:
         self.port = port
         self.pgpu = gpu
 
+        self.log = None
         
         print (self.apptainer.find_image(self.image, smart=True))
     
@@ -291,19 +292,22 @@ class TFSInstance:
         3. ist starts the container 
 
         """
+        
+        self.log = f"{self.name}-status.log"
+        
         if clean:
             self.stop(dt=0)
             
         pwd = os.getcwd()
         
-        os.system(f"rm -f log-{self.name}.log")
+        os.system(f"rm -f {self.log}")
 
         print ("start ...", end="")
         stdout, stderr= self.apptainer.start(name=self.name, home=pwd, image=self.image, gpu=gpu)
         print ("ok")
         print (stdout)
 
-        self.apptainer.exec(name=self.name, command=f"tensorflow_model_server --port={self.port} --rest_api_port=0 --model_config_file=benchmark/models.conf >& log-{self.name}.log &")
+        self.apptainer.exec(name=self.name, command=f"tensorflow_model_server --port={self.port} --rest_api_port=0 --model_config_file=benchmark/models.conf >& {self.log} &")
         r = self.apptainer.system("apptainer instance list")
 
         if wait:
@@ -401,7 +405,7 @@ banner("Benchmark")
 for i in range(0,n):
     name = f"tfs-{i}"
     # port = 8500 + i
-    command = f"python benchmark/tfs_grpc_client.py --id {i} -m medium_cnn -b 32 -n 10 localhost:{port}"
+    command = f"python benchmark/tfs_grpc_client.py --name {name} -m medium_cnn -b 32 -n 10 localhost:{port}"
     print (f"Benchmark {i} ...", end="")
     #server[i].exec(command=command)
     os.system(command)

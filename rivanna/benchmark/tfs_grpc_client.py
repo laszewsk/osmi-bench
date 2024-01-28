@@ -25,10 +25,8 @@ parser.add_argument('-o', '--outfile', default='results.csv', help='name of outp
 parser.add_argument('-v', '--verbose', action='store_true', help='verbose output')
 parser.add_argument('-vv', action='store_true', help='extra verbose output')
 parser.add_argument('--redux', action='store_true', help='divide args.n by args.batch')
-parser.add_argument('--id', required=False, default="0", help='id of the benchmark client')
+parser.add_argument('--name', required=False, default="0", help='id of the benchmark client')
 args = parser.parse_args()
-
-args.id = int(args.id)  
 
 StopWatch.start(f"total")
 hostport = args.server
@@ -69,7 +67,7 @@ else:
 StopWatch.stop("data")
 
 
-
+StopWatch.start("inference")
 for _ in tqdm(range(num_requests)):
     data = np.array(np.random.random(models[args.model]['shape']), dtype=models[args.model]['dtype'])
     tik = time.perf_counter()
@@ -81,6 +79,8 @@ for _ in tqdm(range(num_requests)):
     if args.vv: print(results[0])
     tok = time.perf_counter()
     times.append(tok - tik)
+StopWatch.stop("inference")
+
 
 elapsed = sum(times)
 avg_inference_latency = elapsed/num_requests
@@ -98,7 +98,6 @@ with open(args.outfile, 'a+') as f:
 StopWatch.stop(f"log")  
             
 StopWatch.stop(f"total")
-StopWatch.benchmark(tag=args.id)
-
+StopWatch.benchmark(tag=args.name)
 progress(status="done", progress=100)
 
