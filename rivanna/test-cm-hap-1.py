@@ -323,22 +323,27 @@ def print_instances(tfs):
         )
     )
 
-# Usage
 
 # START SERVERS
 banner("Start servers") 
 n=1
 server = []     
+ports = []
 for i in range(0,n):
     name = f"tfs-{i}"
     port = 8500 + i
+    ports.append(port)
     print ("Start server", i, name, port)
     tfs = TFSInstance(name=name, port=port)
     server.append(tfs)
     tfs.start(gpu=i, clean=True, wait=False)
 
 
+
+
 print_instances(tfs)
+
+
 
 # WAIT FOR SERVERS TO BE READY
 banner("Wait for servers to be ready")
@@ -349,8 +354,16 @@ print("servers are up")
 
 
 port = 8443
-haproxy = HAProxyServer(name="haproxy", port=port, image="haproxy_latest.sif", logfile="haproxy.log")
-haproxy.create_config(ports=["8500"], host="localhost", filename="haproxy-grpc.cfg")
+# haproxy = HAProxyServer(name="haproxy", port=port, image="images/haproxy_latest.sif", logfile="haproxy.log")
+haproxy = HAProxyServer(name="haproxy", port=port)
+
+print ("PORTS:", ports)
+
+
+haproxy.create_config(ports=ports, host="localhost", filename="haproxy-grpc.cfg")
+haproxy.start()
+
+
 stdout, stderr = haproxy.check_config()
 if stderr != "":
     banner("STDOUT")
@@ -361,8 +374,6 @@ if stderr != "":
     print ("ERROR: haproxy config is not valid")
     sys.exit()  
 
-
-haproxy.start()
 
 #haproxy.wait_for_port(port=port) 
 
