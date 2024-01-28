@@ -29,30 +29,6 @@ class HAProxyServer:
         self.filename = None
         self.logfile = f"{name}.log"
 
-    
-    def wait_for_port(self, port= None, dt=1, verbose=False):
-        """
-        TODO: THIS WILL NOT WORK
-
-        Waits for the specified port to be in the LISTEN state in the instance.
-
-        Args:
-            port (int, optional): The port number to wait for. Defaults to 8500.
-            dt (int, optional): The time interval between checks in seconds. Defaults to 1.
-
-        """
-        port = port or self.port
-        while True:
-            try:
-                stdout, stderr = self.exec(command=f"lsof -i :{port}", verbose=verbose)
-            except:
-                stdout = ""
-                stderr = ""
-
-            if '(LISTEN)' in stdout:
-                break
-            time.sleep(dt)
-
     def check_config(self):
         command = "haproxy -f haproxy-grpc.cfg -c"
         return self.apptainer.exec(name=self.name, command=command)
@@ -81,9 +57,9 @@ class HAProxyServer:
             """)
         
         for port in ports:
-            server = f"server tfs0 localhost:{port}"
+            server = f"server tfs0 localhost:{port}\n"
             configuration += server
-        configuration += "\n"
+        #configuration += "\n"
 
         writefile(filename, configuration)
 
