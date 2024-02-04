@@ -1,3 +1,21 @@
+"""
+Usage:
+    python test-cm-hap-yaml.py [--model=MODEL] [--batch=SIZE] [--instances=INSTANCES] [--port=PORT] [--haproxy=[0|1]] [--tfS=NUMBER_TFS] [--host=HOST] 
+    python test-cm-hap-yaml.py [--config=CONFIG]
+
+Options:
+    --model=MODEL       Specify the model name [default: medium]
+    --batch=SIZE        Specify the batch size [default: 32]
+    --instances=INSTANCES  Specify the number of instances [default: 1]
+    --port=PORT         Specify the port [default: 8443]
+    --haproxy=[0|1]     Specify whether to use haproxy or not [default: 1]
+    --tfS=NUMBER_TFS    Specify the number of TFS instances [default: 1]
+    --host=HOST         Specify the host address [default: localhost]
+    --config=CONFIG     Specify the config file [default: config.yaml]
+"""
+
+
+
 import subprocess
 import os
 import time
@@ -19,8 +37,30 @@ n=1 # number of tfs instances
 m=10 # number of benchmarks
 
 class HAProxyServer:
+    """
+    Represents an instance of HAProxy server.
+
+    Attributes:
+        name (str): The name of the haproxy instance.
+        port (int): The port number to be used.
+        image (str): The path to the haproxy image.
+        logfile (str): The name of the log file.
+        apptainer (Apptainer): An instance of the Apptainer class.
+        images (list): A list of available images.
+        ports (list): List of ports to be used in the configuration.
+        filename (str): Name of the configuration file.
+    """
 
     def __init__(self, name="haproxy", port=8443, image="images/haproxy_latest.sif", logfile="haproxy.log"):
+        """
+        Initialize the Haproxy class.
+
+        Args:
+            name (str): The name of the haproxy instance. Default is "haproxy".
+            port (int): The port number to be used. Default is 8443.
+            image (str): The path to the haproxy image. Default is "images/haproxy_latest.sif".
+            logfile (str): The name of the log file. Default is "haproxy.log".
+        """
 
         self.apptainer = Apptainer()
         self.apptainer.add_location("./images")
@@ -34,10 +74,24 @@ class HAProxyServer:
         self.logfile = f"{name}.log"
 
     def check_config(self):
+        """
+        Checks the configuration of HAProxy by running the 'haproxy -f haproxy-grpc.cfg -c' command.
+        
+        Returns:
+            The output of the command execution.
+        """
         command = "haproxy -f haproxy-grpc.cfg -c"
         return self.apptainer.exec(name=self.name, command=command)
 
     def create_config(self, ports=["8500"], host="localhost", filename="haproxy-grpc.cfg"):
+        """
+        Create a configuration file for HAProxy with the specified ports, host, and filename.
+
+        Args:
+            ports (list, optional): List of ports to be used in the configuration. Defaults to ["8500"].
+            host (str, optional): Host address to bind the configuration to. Defaults to "localhost".
+            filename (str, optional): Name of the configuration file. Defaults to "haproxy-grpc.cfg".
+        """
         self.ports = ports
         self.filename = filename
         configuration = textwrap.dedent(f"""
@@ -59,7 +113,7 @@ class HAProxyServer:
             mode tcp
             balance roundrobin
             """)
-        
+
         for port in ports:
             server = f"server tfs0 localhost:{port}\n"
             configuration += server
@@ -68,6 +122,13 @@ class HAProxyServer:
         writefile(filename, configuration)
 
     def start(self, clean=False, dt=0):
+        """
+        Start the HAPROXY service.
+
+        Args:
+            clean (bool, optional): Flag indicating whether to stop the HAPROXY before starting. Defaults to False.
+            dt (int, optional): Delay time in seconds before stopping the HAPROXY. Defaults to 0.
+        """
         pass    
         if clean:
             self.stop(dt=0)
@@ -101,6 +162,16 @@ class HAProxyServer:
 
 
     def stop(self, dt=0):
+            """
+            Stops the HAPROXY container.
+
+            Args:
+                dt (int): Delay time in seconds before checking if the container has stopped. Default is 0.
+
+            Raises:
+                AssertionError: If the container is still running after stopping.
+
+            """
             try:
                 r = self.apptainer.stop(self.name)
             except:
@@ -119,7 +190,7 @@ class HAProxyServer:
         
     def exec(self, command=None, bind=None, nv=False, home=None, verbose=True):
         """
-        Executes a command on the TFS instance.
+        Executes a command on the HAPROXY instance.
 
         Args:
             command (str, optional): The command to execute. Defaults to None.
@@ -177,6 +248,15 @@ class TFSInstance:
     """        
 
     def __init__(self, name="tfs-0", image="cloudmesh-tfs-23-10-nv.sif", port=8500, gpu=0):
+        """
+        Initializes an instance of the TFS.
+
+        Args:
+            name (str): The name of the instance (default: "tfs-0").
+            image (str): The image to be used (default: "cloudmesh-tfs-23-10-nv.sif").
+            port (int): The port number (default: 8500).
+            gpu (int): The GPU number (default: 0).
+        """
 
         self.apptainer = Apptainer()
         self.apptainer.add_location("./images")
@@ -188,7 +268,7 @@ class TFSInstance:
         self.pgpu = gpu
         self.log = f"{name}-serving.log"
         
-        print (self.apptainer.find_image(self.image, smart=True))
+        print(self.apptainer.find_image(self.image, smart=True))
     
 
     def exec(self, command=None, bind=None, nv=True, home=None, verbose=True):
@@ -251,21 +331,37 @@ class TFSInstance:
             return result
 
     def stop(self, dt=0):
-            try:
-                r = self.apptainer.stop(self.name)
-            except:
-                r = ""
+        """
+        Stop the TFS container.
 
-            time.sleep(dt)
+        Args:
+            dt (int): Delay time in seconds before checking if the container has stopped. Default is 0.
 
-            assert "no instance found" not in r
+        Raises:
+            AssertionError: If the container is not stopped successfully.
 
-            r = self.apptainer.list()
-            assert self.name not in r
+        """
+        try:
+            r = self.apptainer.stop(self.name)
+        except:
+            r = ""
+
+        time.sleep(dt)
+
+        assert "no instance found" not in r
+
+        r = self.apptainer.list()
+        assert self.name not in r
 
     def start(self, gpu=None, clean=False, wait=True):
         """
         Starts the TFS instance.
+
+        Args:
+            gpu (str, optional): The GPU to use. Defaults to None.
+            clean (bool, optional): Whether to stop and clean any existing containers with the same name. Defaults to False.
+            wait (bool, optional): Whether to wait for the server to be up and running. Defaults to True.
+        
         1. fisrt ist looks for containers with the same name and stops them
         2. it checks if no container with the name is used.
         3. ist starts the container 
@@ -292,10 +388,34 @@ class TFSInstance:
 
 
 class TFSBenchmark:
-    
+    """
+    A class representing a TensorFlow Serving benchmark.
+
+    Attributes:
+        name (str): The name of the benchmark.
+        port (int): The port number for the TensorFlow Serving server.
+        model (str): The name of the TensorFlow model to be used.
+        batch (int): The batch size for the benchmark.
+        n (int): The number of iterations for the benchmark.
+        output_log (str): The name of the output log file.
+
+    Methods:
+        run(): Runs the benchmark by executing the TensorFlow Serving client.
+        completed(): Checks if the benchmark has completed successfully.
+    """
+
     def __init__(self, name=None, port=8443, model="medium_cnn", batch=32, n=10):
+        """
+        Initialize the benchmark with the given parameters.
+
+        Args:
+            name (str, optional): The name of the instance. Defaults to None.
+            port (int, optional): The port number. Defaults to 8443.
+            model (str, optional): The model to use. Defaults to "medium_cnn".
+            batch (int, optional): The batch size. Defaults to 32.
+            n (int, optional): The value of n. Defaults to 10.
+        """
         self.name = name
-        self.server = server
         self.port = port
         self.model = model
         self.batch = batch
@@ -303,20 +423,38 @@ class TFSBenchmark:
         self.output_log = f"{self.name}.log"
 
     def run(self):
+        """
+        Runs the benchmark by executing the specified command.
+        """
         command = f"python benchmark/tfs_grpc_client.py --name {self.name} -m {self.model} -b {self.batch} -n {self.n} localhost:{self.port} >& {self.output_log} &"
         print(f"Benchmark {self.name} ...", end="")
         os.system(command)
         
     def completed(self):
+        """
+        Checks if the task has been completed.
+
+        Returns:
+            bool: True if the task is completed, False otherwise.
+        """
         if os.path.isfile(self.output_log):
             result = readfile(self.output_log)
             if "# cloudmesh status=done progress=100" in result:
-                print (" completed")
+                print("completed")
                 return True
-        return False               
+        return False
 
 
 def print_instances(tfs):
+    """
+    Print the instances information.
+
+    Args:
+        tfs (object): The tfs object.
+
+    Returns:
+        None
+    """
     instances = tfs.apptainer.list()
     for i in range(0,n):
         for key in ["logErrPath", "logOutPath", "ip"]:
@@ -328,112 +466,196 @@ def print_instances(tfs):
     )
 
 
-# START SERVERS
-banner("Start servers") 
-#n=1
-server = []     
-ports = []
-for i in range(0,n):
-    name = f"tfs-{i}"
-    port = 8500 + i
-    ports.append(port)
-    print ("Start server", i, name, port)
-    tfs = TFSInstance(name=name, port=port)
-    server.append(tfs)
-    tfs.start(gpu=i, clean=True, wait=False)
+#
+# AMNAGE MULTIPLE SERVERS
+#
+
+def start_servers(n):
+    """
+    Start TFS servers.
+
+    Args:
+        n (int): Number of TFS servers to start.
+    """
+    banner("Start servers")
+    servers = []
+    ports = []
+    for i in range(0, n):
+        name = f"tfs-{i}"
+        port = 8500 + i
+        ports.append(port)
+        print("Start server", i, name, port)
+        tfs = TFSInstance(name=name, port=port)
+        servers.append(tfs)
+        tfs.start(gpu=i, clean=True, wait=False)
+
+    return servers, ports
+
+
+def wait_for_servers(servers):
+    """
+    Wait for TFS servers to be ready.
+
+    Args:
+        server (list): List of TFS servers.
+
+    """
+    n = len (servers)
+    banner("Wait for servers to be ready")
+    for i in range(0, n):
+        print(f"Wait for TFS {i} to b ready ...", end="")
+        servers[i].wait_for_port()
+    print("servers are up")
+
+def shutdown_servers(servers):
+    banner("Shutdown servers")
+    for server in servers:
+        print(f"TFS {server} to be ready ...", end="")
+        server.stop()
+        print(" ok")
+
+#
+# MANAGE HAPROXY
+#
+        
+def start_haproxy(port, ports):
+    """
+    Starts the HAProxy server with the specified port and ports configuration.
+
+    Args:
+        port (int): The port number for the HAProxy server.
+        ports (list): A list of port configurations for the HAProxy server.
+
+    Returns:
+        HAProxyServer: The instance of the started HAProxy server.
+
+    Raises:
+        SystemExit: If the HAProxy configuration is not valid.
+    """
+    haproxy = HAProxyServer(name="haproxy", port=port)
+    haproxy.create_config(ports=ports, host="localhost", filename="haproxy-grpc.cfg")
+    haproxy.start()
+
+    stdout, stderr = haproxy.check_config()
+    if stderr != "":
+        banner("STDOUT")
+        print(stdout)
+        banner("STDERR")
+        print(stderr)
+
+        print("ERROR: haproxy config is not valid")
+        sys.exit()
+    return haproxy
+
+
+#
+# MANAGE BENCHMARKS
+#
+
+
+def run_benchmarks(m, port):
+    """
+    Run benchmarks on multiple servers.
+
+    Args:
+        m (int): The number of servers to run benchmarks on.
+        port (int): The port number to use for the benchmarks.
+
+    Returns:
+        list: A list of benchmark objects.
+
+    """
+    benchmarks = []
+    # BENCHMARK ON n SERVERS
+    banner("Benchmark")
+    for i in range(0, m):
+        name = f"benchmark-{i}"
+        benchmark = TFSBenchmark(name=name, port=port)
+        benchmarks.append(benchmark)
+        benchmark.run()
+        print(" started")
+    return benchmarks
+
+def wait_for_benchmark_completion(benchmarks):
+    """
+    Waits for the benchmarks to be completed.
+    
+    Args:
+        benchmarks (list): A list of benchmark objects.
+        
+    Returns:
+        None
+    """
+    banner("Wait for benchmark to be completed")
+    m = len(benchmarks)
+    while True:
+        completed = True
+        for i in range(0, m):
+            benchmark = benchmarks[i]
+            if not benchmark.completed():
+                completed = False
+        if completed:
+            break
+        time.sleep(1)
 
 
 
-print_instances(tfs)
+def main(n, m, port=8443, haproxy=1, tfS=1, host="localhost"):
 
-# WAIT FOR SERVERS TO BE READY
-banner("Wait for servers to be ready")
-for i in range(0,n):
-    print (f"Wait for TFS {i} to b ready ...", end="")
-    server[i].wait_for_port()
-print("servers are up")
+    # START SERVERS
+    servers, ports = start_servers(n)
+    wait_for_servers(servers)
+    print ("PORTS:", ports)
+    if haproxy > 1:
+        raise ValueError("haproxy must be 0 or 1")
+    if haproxy == 1:
+        port = 8443 
+        haproxy = start_haproxy(port, ports)  
+    else:
+        port = 8500
 
-port = 8443
-# haproxy = HAProxyServer(name="haproxy", port=port, image="images/haproxy_latest.sif", logfile="haproxy.log")
-haproxy = HAProxyServer(name="haproxy", port=port)
+    benchmarks = run_benchmarks(m, port)
+    wait_for_benchmark_completion(benchmarks)
 
-print ("PORTS:", ports)
-
-
-haproxy.create_config(ports=ports, host="localhost", filename="haproxy-grpc.cfg")
-haproxy.start()
-
-
-stdout, stderr = haproxy.check_config()
-if stderr != "":
-    banner("STDOUT")
-    print (stdout)
-    banner("STDERR")
-    print (stderr)
-
-    print ("ERROR: haproxy config is not valid")
-    sys.exit()  
-
-
-
-#haproxy.wait_for_port(port=port) 
-
-
-# START HAPROXY
-
-# storr one or 0 haproxy
-
-
-# benchamrk
-
-# if not haproxy (haproxy = 0)
-#    python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8500
-# elif haproxy = 1:
-#      python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:8443
-
-#script = f"""
-##!/bin/sh
-#cd benchmark
-#python3 tfs_grpc_client.py -m medium_cnn -b 32 -n 10 localhost:{port}
-#"""
-
-#m = 1
-benchmarks = []
-# BENCHMARK ON n SERVERS
-banner("Benchmark")
-for i in range(0,m):
-    name = f"benchmark-{i}"
-    benchmark = TFSBenchmark(name=name, port=port)
-    benchmarks.append(benchmark)
-    benchmark.run()
-    print (" started")
-
-# WAIT FOR BENCHMARK TO BE COMPLETED
-banner("Wait for benchmark to be completed")
-while True:
-    completed = True
-    for i in range(0,m):
-        benchmark = benchmarks[i]
-        if not benchmark.completed():
-            completed = False
-    if completed:
-        break
+    shutdown_servers(servers)
+    banner("Shutdown haproxy")
+    haproxy.stop()
     time.sleep(1)
+    banner("List instances")
+    os.system("cma list")
 
 
-# SHUTDOWN SERVERS
-banner("Shutdown servers")
-for i in range(0,n):
-    print (f"TFS {i} to b ready ...", end="")
-    server[i].stop()
-    print (" ok")
+# NOT COMPLETED FROM HERE ON
+    
+from docopt import docopt
 
-# SHUTDOWN HAPROXY
-banner("Shutdown haproxy")
-haproxy.stop()
+if __name__ == '__main__':
+    arguments = docopt(__doc__)
+    config_file = arguments['--config']
+    
+    if config_file:
+        # Handle the case when --config parameter is used
+        model = None
+        batch_size = None
+        num_instances = None
+        host = None
+    else:
+        # Handle the case when other parameters are used
+        model = arguments['--model']
+        batch_size = int(arguments['--batch'])
+        num_instances = int(arguments['--instances'])
+        host = arguments['--host']
 
-#time.sleep(1)
-os.system("cma list")
+    # Rest of the code...
+    m = 10 # number of benchmarks
+    n = 1 # number of tfs instances
+    # TODO make batch size work
+    # TODO make model name work
+    # TODOn work
+    # integarte yaml file read parameters, create yaml file with experiment: model name, batch #, bench instances #, haproxy #, tfS #
+    main(n, m, port=8443, haproxy=True, tfS=1, host="localhost")
+    
+
 
 
 
