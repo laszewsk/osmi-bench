@@ -57,6 +57,12 @@ node>
 
 5. Preparing model
 
+Generate the modesl config file
+
+```bash
+python create_model_conf.py 
+```
+
 Generate the model in the models directory using:
 
 ```bash
