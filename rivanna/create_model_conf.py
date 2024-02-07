@@ -28,6 +28,7 @@ def main():
     print(config)   
     
     writefile(filename, config)    
+    writefile(f"models/{filename}", config)    
 
 if __name__ == "__main__":
     main()
