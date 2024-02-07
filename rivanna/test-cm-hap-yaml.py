@@ -1,8 +1,8 @@
 """
 Usage:
-    python test-cm-hap-yaml.py [--model=MODEL] [--batch=SIZE] [--instances=INSTANCES] [--port=PORT] [--haproxy=[0|1]] [--tfS=NUMBER_TFS] [--host=HOST] 
     python test-cm-hap-yaml.py [--config=CONFIG]
-
+    python test-cm-hap-yaml.py [--model=MODEL] [--batch=SIZE] [--instances=INSTANCES] [--port=PORT] [--haproxy=[0|1]] [--tfS=NUMBER_TFS] [--host=HOST] 
+    
 Options:
     --model=MODEL       Specify the model name [default: medium]
     --batch=SIZE        Specify the batch size [default: 32]
@@ -670,7 +670,16 @@ if __name__ == '__main__':
     # TODO make model name work
     # TODOn work
     # integarte yaml file read parameters, create yaml file with experiment: model name, batch #, bench instances #, haproxy #, tfS #
-    main(n, m, port=8443, haproxy=True, tfS=1, host="localhost")
+    
+    
+    print("n:", n)
+    print("m:", m)
+    print("port:", port)
+    print("haproxy:", haproxy)
+    print("tfS:", tfS)
+    print("host:", host)
+
+    #main(n, m, port=8443, haproxy=True, tfS=1, host="localhost")
     
 
 

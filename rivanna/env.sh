@@ -5,7 +5,8 @@ export CLOUDMESH_CONFIG_DIR=$USER_SCRATCH/.cloudmesh
 export APPTAINER_CACHEDIR=$USER_SCRATCH/.apptainer/cache
 
 export OSMI_PROJECT=`pwd`
-export OSMI_TARGET=$OSMI_PROJECT/rivanna
+export OSMI_TARGET=$OSMI_PROJECT
+
 
 mkdir -p $APPTAINER_CACHEDIR
 

@@ -1,0 +1,60 @@
+name: osmi-training
+
+ee:
+  time: "0:30:00"
+
+submission:
+  benchmark: {name}
+  name: {name}
+  submitter: Gregor von Laszewski
+  email: laszewski@gmail.com
+  org: University of Virginia
+  division: open
+  version: 1.0
+  github_commit_version: TBD
+  status: completed
+  platform: rivanna
+  accelerators_per_node: 1
+
+experiment:
+  # model: "small_lstm"
+  # directive: "a100-dgx"
+  # repeat: "1"
+  
+  #model: "small_lstm,medium_cnn,large_tcnn"
+  model: "small_lstm"
+  #directive: "a100,a100-dgx,v100,rtx2080,rtx3090,a100-pod,a6000"
+  #directive: "k80,p100"
+  #repeat: "1,2,3,4,5,6,7,8,9,10"
+  directive: "a100-dgx"
+  repeat: "1"
+  
+other:
+  #epoch: "1"
+  #epoch: "1,2,10,30,50,70,100"
+  batch_size: 32
+  nodes: 1
+  gpu: 1
+  gpu_count: "1"
+  cpu_num: 1
+  mem: "64GB"
+
+identifier: "{experiment.directive}_{experiment.model}-{experiment.repeat}"
+
+system:
+  host: "rivanna"
+  python: "3.10.8"
+  num_cpus: 1
+  platform: rivanna
+  accelerators_per_node: 1
+  constraint: ""
+  reservation: ""
+
+
+output:
+  directory: "./project/model_{experiment.model}_directive_{experiment.directive}_repeat_{experiment.repeat}"
+
+
+log:
+  file: c_cloudmask_run.log
+  mlperf: c_mlperf_cloudmask.log
