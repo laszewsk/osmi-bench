@@ -26,6 +26,10 @@ import textwrap
 from cloudmesh.common.util import writefile
 import sys
 from cloudmesh.common.util import readfile
+    
+from docopt import docopt
+from cloudmesh.common.FlatDict import FlatDict
+from cloudmesh.common.FlatDict import expand_config_parameters
 
 # TODO: make sure the config files are unique for each instance
 # TODO: make sure the ports are unique for each instance
@@ -626,8 +630,21 @@ def main(n, m, port=8443, haproxy=1, tfS=1, host="localhost"):
 
 
 # NOT COMPLETED FROM HERE ON
-    
-from docopt import docopt
+
+def load_config(self, filename=None):
+    config = FlatDict()
+    config.load(self.config_file, expand=True)
+    expand_config_parameters(flat=config, expand_yaml=True, expand_os=True, expand_cloudmesh=True)
+    return config
+
+
+args = parser.parse_args()
+
+config = FlatDict()
+config.load(getattr(args, 'config'), expand=True)
+
+config["experiment.ngpus"] = int(config["experiment.ngpus"])
+config["experiment.batch"] = int(config["experiment.batch"])
 
 if __name__ == '__main__':
     arguments = docopt(__doc__)
