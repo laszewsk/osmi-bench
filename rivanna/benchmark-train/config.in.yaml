@@ -21,13 +21,15 @@ experiment:
   # directive: "a100-dgx"
   # repeat: "1"
   
-  #model: "small_lstm,medium_cnn,large_tcnn"
-  model: "small_lstm"
+  model: "small_lstm,medium_cnn,large_tcnn"
+  #model: "small_lstm"
   #directive: "a100,a100-dgx,v100,rtx2080,rtx3090,a100-pod,a6000"
   #directive: "k80,p100"
-  #repeat: "1,2,3,4,5,6,7,8,9,10"
-  directive: "a100-dgx"
-  repeat: "1"
+  repeat: "1,2,3,4,5,6,7,8,9,10"
+  directive: "a100-dgx,a6000"
+  #directive: "a100,v100,rtx2080,rtx3090,a100-pod"
+  #directive: "a6000"
+  #repeat: "1"
   
 other:
   #epoch: "1"

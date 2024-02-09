@@ -1,0 +1,113 @@
+
+name: osmi-rivanna
+
+ee:
+  time: "1:00"
+  mode: h
+  dir: scratch
+  nodes: 1
+  # ntasks: 37
+  ntasks: 10
+  mem: 8G
+  # mem: 256G
+  # mem_per_gpu: 256G
+
+system:
+  host: "rivanna"
+  python: "3.10.8"
+  num_cpus: 1
+  platform: rivanna
+  accelerators_per_node: 1
+  constraint: ""
+  reservation: ""
+
+
+experiment:
+  directive: "a100"
+  repeat: "1"
+  model: "small_lstm,medium_cnn,large_tcnn"
+  batch: "32"  
+  gpus: "1"
+  clients: "1"
+  calls: "10"
+  haproxy: "1"
+
+identifier: "{experiment.directive}_{experiment.model}-{experiment.repeat}-{experiment.batch}-{experiment.gpus}-{experiment.clients}-{experiment.calls}"
+
+# Submission Information
+submission:
+  name: Osmi
+  submitter: Gregor von Laszewski
+  email: laszewski@gmail.com
+  org: University of Virginia
+  division: open
+  version: mlcommons-osmi-v2.0
+  # github_commit_version: TBD
+  status: completed
+  platform: rivanna
+  accelerators_per_node: "{experiment.gpus}"
+
+benchmark:
+  name: Osmi
+  user: Gregor von Laszewski
+  e-mail: laszewski@gmail.com
+  organisation: University of Virginia
+  division: open
+  version: mlcommons-osmi-v2.0
+  status: completed
+  platform: rivanna
+  accelerators_per_node: "{experiment.gpus}"
+
+
+# experiment:
+#   directive: "a100,v100,rtx2080" #nate
+#   # directive: "a100,v100,rtx2080,rtx3090" #nate
+#   # rtx3090 can use no more than 64G of memory
+#   batch: "64,128,256,512"
+#   # batch: "64"a
+#   ngpus: "1"
+#   concurrency: "1"
+#   model: "large_tcnn"
+#   repeat: "1"
+
+# experiment:
+#   directive: "a100,v100,rtx2080" #nate
+#   batch: "2"
+#   ngpus: "1"
+#   concurrency: "1"
+#   model: "small_lstm"
+#   repeat: "1"
+
+constant:
+  server: "localhost"
+  tfs_base_port: 8500
+  haproxy_port: 8443
+  nrequests: 16384
+  algorithm: tfs_grpc_client.py
+  timeout: 45
+
+project:
+  user: "/scratch/{os.USER}"
+  dir: "{project.user}/osmi"
+
+# this is a bug we should be able to use project.dir, it does not show properly in the slurm script
+data:
+  output: "./outputs"
+  sif_dir: "{project.dir}/target/rivanna/images"
+  haproxy_sif: "{data.sif_dir}/haproxy_latest.sif"
+  tfs_sif: "{data.sif_dir}/osmi-bench/rivanna/images/cloudmesh-tfs-23-10-nv.sif"
+  haproxy_cfg_file: haproxy-grpc.cfg
+
+user: "{os.USER}"
+
+model_config_list:
+  small_lstm:
+    base_path: "{project.user}/osmi/models/small_lstm"
+    model_platform: "tensorflow"
+  medium_cnn:
+    base_path: "{project.user}/osmi/models/medium_cnn"
+    model_platform: "tensorflow"
+  large_tcnn:
+    base_path: "{project.user}/osmi/models/large_tcnn"
+    model_platform: "tensorflow"
+
