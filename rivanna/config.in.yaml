@@ -2,7 +2,7 @@
 name: osmi-rivanna
 
 ee:
-  time: "1:00"
+  time: "30:00"
   mode: h
   dir: scratch
   nodes: 1

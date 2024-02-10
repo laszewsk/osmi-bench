@@ -35,7 +35,7 @@ if [ -z "$OSMI_TARGET" ]; then
     echo "OSMI_TARGET is not set"
     exit 1
 fi
-export CONTAINER_DIR=$OSMI_TARGET/images/
+export CONTAINER_DIR=$OSMI_TARGET/images
 
 module purge
 module load apptainer
