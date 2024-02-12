@@ -1,4 +1,9 @@
-# OSMI-Bench
+# Ubuntu
+
+sudo apt install haproxy
+
+
+# Rivanna OSMI-Bench
 
 The Open Surrogate Model Inference (OSMI) Benchmark is a distributed inference benchmark
 for analyzing the performance of machine-learned surrogate models and is described in its original form as "smiBench" in the following paper:

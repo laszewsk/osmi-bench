@@ -50,7 +50,7 @@ project-slurm:
 	        --output_dir=./project \
             --source_dir=. \
 		    --verbose \
-			--copycode="test-cm-hap-yaml.py"
+			--copycode="1-test-cm-hap-yaml.py"
 	cms ee generate submit --name=project --job_type=slurm > project-jobs-slurm.sh
 	cms ee list
 

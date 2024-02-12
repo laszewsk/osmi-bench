@@ -77,7 +77,7 @@ python --version
 
 PROGRESS "running" "configure" 7
 
-python test-cm-hap-yaml.py --config=config.yaml
+python 1-test-cm-hap-yaml.py --config=config.yaml
 
 PROGRESS "completed" "done" 100
 

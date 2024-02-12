@@ -272,7 +272,9 @@ class TFSInstance:
             gpu (int): The GPU number (default: 0).
         """
 
-        models = models or MODELS
+        if models is None:
+            raise ValueError("models is not defined")
+    
         image_dir = image_dir or IMAGES
         self.apptainer = Apptainer()
         self.apptainer.add_location(image_dir)
@@ -281,7 +283,7 @@ class TFSInstance:
         self.name = name
         self.image = image
         self.port = port
-        self.pgpu = gpu
+        self.gpu = gpu
         self.log = f"{name}-serving.log"
         self.models = models
 
@@ -334,7 +336,7 @@ class TFSInstance:
                 break
             time.sleep(dt)
 
-    def script(self, script, name=None):
+    def script(self, script, nanme=None):
         """
         Executes a script on the TFS instance.
 
@@ -375,7 +377,7 @@ class TFSInstance:
         r = self.apptainer.list()
         assert self.name not in r
 
-    def start(self, gpu=None, clean=False, wait=True):
+    def start(self, clean=False, wait=True):
         """
         Starts the TFS instance.
 
@@ -396,7 +398,7 @@ class TFSInstance:
         os.system(f"rm -f {self.log}")
 
         print("start ...", end="")
-        stdout, stderr = self.apptainer.start(name=self.name, home=pwd, image=self.image, gpu=gpu)
+        stdout, stderr = self.apptainer.start(name=self.name, home=pwd, image=self.image, gpu=self.gpu)
         print("ok")
         print(stdout)
 
@@ -482,6 +484,13 @@ class TFSBenchmark:
         return False
 
 
+
+#
+# MANAGE MULTIPLE SERVERS
+#
+
+
+
 def print_instances(tfs):
     """
     Print the information about the instances.
@@ -503,90 +512,132 @@ def print_instances(tfs):
     )
 
 
-#
-# MANAGE MULTIPLE SERVERS
-#
+class TFSInstances:
 
-def start_servers(n):
-    """
-    Start TFS servers.
+    def __init__(self, n=1, port=8500, image_dir=None, models=None, with_haproxy=True, haproxy_server_port=8443):
+        """
+        Initialize the TFSInstances class.
 
-    Args:
-        n (int): Number of TFS servers to start.
-    """
-    banner("Start servers")
-    servers = []
-    ports = []
-    for i in range(0, n):
-        name = f"tfs-{i}"
-        port = 8500 + i
-        ports.append(port)
-        print("Start server", i, name, port)
-        tfs = TFSInstance(name=name, image_dir=IMAGES, port=port, models=MODELS)
-        servers.append(tfs)
-        tfs.start(gpu=i, clean=True, wait=False)
+        Args:
+            n (int): The number of instances to create.
+            image_dir (str): The path to the image directory.
+            models (str): The path to the models directory.
+        """
+        self.n = n
+        self.servers = []
+        self.ports = []
+        self.gpus = []
+        if with_haproxy:
+            self.haproxy_server = None
+            self.haproxy_server_port = haproxy_server_port or 8433
+        
+        if models is None:
+            raise ValueError("models is not defined")
 
-    return servers, ports
+        for i in range(0, n):
+            name = f"tfs-{i}"
+            _port = port + i
+            self.gpus.append(i) 
+            print("Initialize server", i, name, _port)
+            self.ports.append(_port)
+            tfs = TFSInstance(name=name, image_dir=image_dir, port=_port, models=models, gpu=i)
+            self.servers.append(tfs)
 
+    def start(self, clean=False, wait=True):
+        """
+        Start the TFS instances.
 
-def wait_for_servers(servers):
-    """
-    Wait for TFS servers to be ready.
+        Args:
+            clean (bool): Whether to clean the instances before starting.
+            wait (bool): Whether to wait for the instances to be ready.
 
-    Args:
-        servers (list): List of TFS servers.
-
-    """
-    n = len(servers)
-    banner("Wait for servers to be ready")
-    for i in range(0, n):
-        print(f"Wait for TFS {i} to b ready ...", end="")
-        servers[i].wait_for_port()
-    print("servers are up")
-
-
-def shutdown_servers(servers):
-    banner("Shutdown servers")
-    for server in servers:
-        print(f"TFS {server} to be ready ...", end="")
-        server.stop()
-        print(" ok")
-
-#
-# MANAGE HAPROXY
-#
+        Returns:
+            None
+        """
+        banner("Start servers")
+        for i in range(0, self.n):
+            print(f"Start TFS {i} ...", end="")
+            self.servers[i].start(clean=clean, wait=wait)
+            print(" ok")
 
 
-def start_haproxy(port, ports):
-    """
-    Starts the HAProxy server with the specified port and ports configuration.
+    def stop(self):
+        """
+        Stop the TFS instances.
 
-    Args:
-        port (int): The port number for the HAProxy server.
-        ports (list): A list of port configurations for the HAProxy server.
+        Returns:
+            None
+        """
+        banner("Stop servers")
+        for i in range(0, self.n):
+            print(f"Stop TFS {i} ...", end="")  
+            self.servers[i].stop()
+            print(" ok")
 
-    Returns:
-        HAProxyServer: The instance of the started HAProxy server.
+    def wait_for_port(self):
+        """
+        Wait for the TFS instances to be ready.
 
-    Raises:
-        SystemExit: If the HAProxy configuration is not valid.
-    """
-    haproxy = HAProxyServer(name="haproxy", image_dir=IMAGES, port=port)
-    haproxy.create_config(ports=ports, host="localhost", filename="haproxy-grpc.cfg")
-    haproxy.start()
-
-    stdout, stderr = haproxy.check_config()
-    if stderr != "":
-        banner("STDOUT")
-        print(stdout)
-        banner("STDERR")
-        print(stderr)
-
-        print("ERROR: haproxy config is not valid")
-        sys.exit()
-    return haproxy
+        Returns:
+            None
+        """
+        banner("Wait for servers to be ready")
+        for i in range(0, self.n):
+            print(f"Wait for TFS {i} to b ready ...", end="")
+            self.servers[i].wait_for_port()
+            print(" ok")
 
 
+    def start_haproxy(self, port=None):
+        """
+        Starts the HAProxy server with the specified port and ports configuration.
+
+        Args:
+            port (int): The port number for the HAProxy server.
+            ports (list): A list of port configurations for the HAProxy server.
+
+        Returns:
+            HAProxyServer: The instance of the started HAProxy server.
+
+        Raises:
+            SystemExit: If the HAProxy configuration is not valid.
+        """
+        self.haproxy_server_port = port or self.haproxy_server_port
+        self.haproxy = HAProxyServer(name="haproxy", image_dir=IMAGES, port=self.haproxy_server_port)
+        self.haproxy.create_config(ports=self.ports, host="localhost", filename="haproxy-grpc.cfg")
+        self.haproxy.start()
+
+        stdout, stderr = self.haproxy.check_config()
+        if stderr != "":
+            banner("STDOUT")
+            print(stdout)
+            banner("STDERR")
+            print(stderr)
+
+            print("ERROR: haproxy config is not valid")
+            sys.exit()
+
+    def stop_haproxy(self):
+        """
+        Stops the HAProxy server.
+
+        Returns:
+            None
+        """
+        banner("Stop HAProxy")
+        self.haproxy.stop() 
+
+    def shutdown(self):
+        """
+        Shutdown the TFS instances.
+
+        Returns:
+            None
+        """
+        self.stop()
+        if self.haproxy_server is not None:
+            self.stop_haproxy()
+        print("Shutdown completed")
 #
 # MANAGE BENCHMARKS
 #
@@ -642,26 +693,30 @@ def wait_for_benchmark_completion(benchmarks):
         time.sleep(1)
 
 
-def main(n, m, port=8443, haproxy=1, tfs=1, host="localhost", model="medium_cnn"):
+def main(n, m, port=8443, haproxy=1, host="localhost", model="medium_cnn"):
 
     # START SERVERS
-    servers, ports = start_servers(n)
-    wait_for_servers(servers)
-    print("PORTS:", ports)
+
+
+    servers = TFSInstances(n, image_dir=IMAGES, models=MODELS)
+
+    servers.start()
+    servers.wait_for_port()
+    print("PORTS:", servers.ports)
+    print("HAProxy PORT:", servers.haproxy_server_port)
+
     if haproxy > 1:
         raise ValueError("haproxy must be 0 or 1")
     if haproxy == 1:
         port = 8443 
-        haproxy = start_haproxy(port, ports)  
+        servers.start_haproxy(port=port)  
     else:
         port = 8500
 
     benchmarks = run_benchmarks(m, port, model)
     wait_for_benchmark_completion(benchmarks)
 
-    shutdown_servers(servers)
-    banner("Shutdown haproxy")
-    haproxy.stop()
+    servers.shutdown()
     time.sleep(1)
     banner("List instances")
     os.system("cma list")
@@ -735,7 +790,7 @@ if __name__ == '__main__':
     print("haproxy:", haproxy)
     print("host:", host)
 
-    main(gpus, clients, port=port, haproxy=haproxy, tfs=gpus, host=host, model=model)
+    main(gpus, clients, port=port, haproxy=haproxy, host=host, model=model)
     
 
 # r = tfs.instance_script(script)
