@@ -1,7 +1,7 @@
 """ test-cm-hap-yaml.
 Usage:
   test-cm-hap-yaml.py [--config=CONFIG]
-  test-cm-hap-yaml.py [--model=MODEL] [--batch=SIZE] [--instances=INSTANCES] [--port=PORT] [--haproxy=[0|1]] [--tfS=NUMBER_TFS] [--host=HOST] 
+  test-cm-hap-yaml.py [--model=MODEL] [--batch=SIZE] [--instances=INSTANCES] [--port=PORT] [--haproxy=[0|1]] [--tfs=NUMBER_TFS] [--host=HOST]
     
 Options:
   --model=MODEL         Specify the model name [default: medium]
@@ -9,20 +9,17 @@ Options:
   --instances=INSTANCES  Specify the number of instances [default: 1]
   --port=PORT            Specify the port [default: 8443]
   --haproxy=HAPROXY      Specify whether to use haproxy or not allowed values 0 or 1 [default: 1]
-  --tfS=NUMBER_TFS       Specify the number of TFS instances [default: 1]
+  --tfs=NUMBER_TFS       Specify the number of TFS instances [default: 1]
   --host=HOST            Specify the host address [default: localhost]
   --config=CONFIG        Specify the config file [default: config.yaml]
 """
 
 import subprocess
 import os
-import time
-import textwrap
-from tabulate import tabulate
 import sys
-from docopt import docopt
-from cloudmesh.common.util import banner
-from cloudmesh.common.debug import VERBOSE
+import textwrap
+import time
+
 from cloudmesh.apptainer.apptainer import Apptainer
 from tabulate import tabulate
 import textwrap
@@ -31,11 +28,16 @@ from cloudmesh.common.util import readfile
 from cloudmesh.common.FlatDict import FlatDict
 from cloudmesh.common.FlatDict import expand_config_parameters
 from cloudmesh.common.debug import VERBOSE
+from cloudmesh.common.util import banner
+from cloudmesh.common.util import readfile
+from cloudmesh.common.util import writefile
+from docopt import docopt
+from tabulate import tabulate
 
 # TODO: make sure the config files are unique for each instance
 # TODO: make sure the ports are unique for each instance
 # TODO: make sure the names are unique for each instance
-# TODO: make sure the script names  are unique whenever a scipt is used
+# TODO: make sure the script names  are unique whenever a script is used
 
 
 N = n =1 # number of tfs instances
@@ -104,7 +106,7 @@ class HAProxyServer:
         command = "haproxy -f haproxy-grpc.cfg -c"
         return self.apptainer.exec(name=self.name, command=command)
 
-    def create_config(self, ports=["8500"], host="localhost", filename="haproxy-grpc.cfg"):
+    def create_config(self, ports=None, host="localhost", filename="haproxy-grpc.cfg"):
         """
         Create a configuration file for HAProxy with the specified ports, host, and filename.
 
@@ -113,7 +115,7 @@ class HAProxyServer:
             host (str, optional): Host address to bind the configuration to. Defaults to "localhost".
             filename (str, optional): Name of the configuration file. Defaults to "haproxy-grpc.cfg".
         """
-        self.ports = ports
+        self.ports = ports or ["8500"]
         self.filename = filename
         configuration = textwrap.dedent(f"""
             global
@@ -138,7 +140,7 @@ class HAProxyServer:
         for port in ports:
             server = f"server tfs0 localhost:{port}\n"
             configuration += server
-        #configuration += "\n"
+        # configuration += "\n"
 
         writefile(filename, configuration)
 
@@ -159,56 +161,52 @@ class HAProxyServer:
             os.remove(self.logfile)        
  
         image_path = self.image["path"]
-        print ("Image Path", image_path)
-        print ("start ...", end="")
-        stdout, stderr= self.apptainer.start(name=self.name, home=pwd, image=image_path)
-        print ("ok")
-        print (stdout)
-
+        print("Image Path", image_path)
+        print("start ...", end="")
+        stdout, stderr = self.apptainer.start(name=self.name, home=pwd, image=image_path)
+        print("ok")
+        print(stdout)
 
         command = f"haproxy -d -f {self.filename} > {self.logfile} 2>&1 &"
-        print (command) 
+        print(command)
 
         banner("Start HAProxy")
 
         self.apptainer.exec(name=self.name, command=command)
-        #r = self.apptainer.system("apptainer instance list")
+        # r = self.apptainer.system("apptainer instance list")
         #
-        #if wait:
+        # if wait:
         #    self.wait_for_port(name=self.name, port=self.port)
         #
-        #print ("Server is up")
+        # print ("Server is up")
 
         # figure out a way to see if haproxy is up and working
 
-
-
     def stop(self, dt=0):
-            """
-            Stops the HAPROXY container.
+        """
+        Stops the HAPROXY container.
 
-            Args:
-                dt (int): Delay time in seconds before checking if the container has stopped. Default is 0.
+        Args:
+            dt (int): Delay time in seconds before checking if the container has stopped. Default is 0.
 
-            Raises:
-                AssertionError: If the container is still running after stopping.
+        Raises:
+            AssertionError: If the container is still running after stopping.
 
-            """
-            try:
-                r = self.apptainer.stop(self.name)
-            except:
-                r = ""
+        """
+        try:
+            r = self.apptainer.stop(self.name)
+        except:
+            r = ""
 
-            time.sleep(dt)
+        time.sleep(dt)
 
-            assert "no instance found" not in r
+        assert "no instance found" not in r
 
-            r = self.apptainer.list()
-            assert self.name not in r
+        r = self.apptainer.list()
+        assert self.name not in r
 
     def status(self):
         pass
-
         
     def exec(self, command=None, bind=None, nv=False, home=None, verbose=True):
         """
@@ -216,7 +214,11 @@ class HAProxyServer:
 
         Args:
             command (str, optional): The command to execute. Defaults to None.
-            
+            bind ():
+            nv ():
+            home ():
+            verbose ():
+
         Returns:
             str: The output of the executed command.
 
@@ -225,11 +227,10 @@ class HAProxyServer:
 
         if verbose:        
             banner(f"stdout {command}")
-            print (stdout)
+            print(stdout)
             banner(f"stderr {command}")
-            print (stderr)
+            print(stderr)
         return stdout, stderr
-
 
     def script(self, script, name=None):
         """
@@ -302,6 +303,11 @@ class TFSInstance:
 
         Args:
             command (str, optional): The command to execute. Defaults to None.
+            bind (): 
+            nv (): 
+            home (): 
+            verbose (): 
+            
             
         Returns:
             str: The output of the executed command.
@@ -311,9 +317,9 @@ class TFSInstance:
 
         if verbose:        
             banner(f"stdout {command}")
-            print (stdout)
+            print(stdout)
             banner(f"stderr {command}")
-            print (stderr)
+            print(stderr)
         return stdout, stderr
 
     def wait_for_port(self, port=None, dt=1, verbose=False):
@@ -323,6 +329,7 @@ class TFSInstance:
         Args:
             port (int, optional): The port number to wait for. Defaults to 8500.
             dt (int, optional): The time interval between checks in seconds. Defaults to 1.
+            verbose ():
 
         """
         port = port or self.port
@@ -338,22 +345,22 @@ class TFSInstance:
             time.sleep(dt)
 
     def script(self, script, name=None):
-            """
-            Executes a script on the TFS instance.
+        """
+        Executes a script on the TFS instance.
 
-            Args:
-                script (str): The script to execute. It can be multiline.
-                name (str, optional): The name of the script file. Defaults to "tmp-benchmark.sh".
+        Args:
+            script (str): The script to execute. It can be multiline.
+            name (str, optional): The name of the script file. Defaults to "tmp-benchmark.sh".
 
-            Returns:
-                str: The output of the executed script.
+        Returns:
+            str: The output of the executed script.
 
-            """
-            name = name or f"tmp-script-{self.name}.sh"
-            with open(name, "w") as file:
-                file.write(script)
-            result = self.instance_exec(command=f"sh {name}")
-            return result
+        """
+        name = name or f"tmp-script-{self.name}.sh"
+        with open(name, "w") as file:
+            file.write(script)
+        result = self.instance_exec(command=f"sh {name}")
+        return result
 
     def stop(self, dt=0):
         """
@@ -387,7 +394,7 @@ class TFSInstance:
             clean (bool, optional): Whether to stop and clean any existing containers with the same name. Defaults to False.
             wait (bool, optional): Whether to wait for the server to be up and running. Defaults to True.
         
-        1. fisrt ist looks for containers with the same name and stops them
+        1. first ist looks for containers with the same name and stops them
         2. it checks if no container with the name is used.
         3. ist starts the container 
 
@@ -398,23 +405,24 @@ class TFSInstance:
         pwd = os.getcwd()
         os.system(f"rm -f {self.log}")
 
-        print ("start ...", end="")
-        stdout, stderr= self.apptainer.start(name=self.name, home=pwd, image=self.image, gpu=gpu)
-        print ("ok")
-        print (stdout)
+        print("start ...", end="")
+        stdout, stderr = self.apptainer.start(name=self.name, home=pwd, image=self.image, gpu=gpu)
+        print("ok")
+        print(stdout)
 
         banner("command")
-        command = f"tensorflow_model_server --port={self.port} --rest_api_port=0 --model_config_file={self.models} >& {self.log} &"
+        command = f"tensorflow_model_server"\
+                  f" --port={self.port} --rest_api_port=0 --model_config_file={self.models} >& {self.log} &"
 
-        print (command)
+        print(command)
 
         self.apptainer.exec(name=self.name, command=command)
         r = self.apptainer.system("apptainer instance list")
 
         if wait:
-            self.wait_for_port(name=self.name, port=self.port)
+            self.wait_for_port(port=self.port)
 
-        print ("Server is up")
+        print("Server is up")
 
 
 class TFSBenchmark:
@@ -457,9 +465,15 @@ class TFSBenchmark:
         """
         Runs the benchmark by executing the specified command.
         """
-        command = f"python {self.benchmark_dir}/tfs_grpc_client.py --name {self.name} -m {self.model} -b {self.batch} -n {self.n} localhost:{self.port} >& {self.output_log} &"
-        banner ("command")
-        print (command)
+        command = f"python {self.benchmark_dir}/tfs_grpc_client.py"\
+                  f" --name {self.name}"\
+                  f" -m {self.model}"\
+                  f" -b {self.batch}"\
+                  f" -n {self.n}"\
+                  f" localhost:{self.port}"\
+                  f" >& {self.output_log} &"
+        banner("command")
+        print(command)
         print(f"Benchmark {self.name} ...", end="")
         os.system(command)
         
@@ -480,7 +494,7 @@ class TFSBenchmark:
 
 def print_instances(tfs):
     """
-    Print the instances information.
+    Print the information about the instances.
 
     Args:
         tfs (object): The tfs object.
@@ -489,7 +503,7 @@ def print_instances(tfs):
         None
     """
     instances = tfs.apptainer.list()
-    for i in range(0,n):
+    for i in range(0, n):
         for key in ["logErrPath", "logOutPath", "ip"]:
             del instances[i][key]
     print(

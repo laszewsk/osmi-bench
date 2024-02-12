@@ -289,12 +289,6 @@ class TFSInstance:
 
     def exec(self, command=None, bind=None, nv=True, home=None, verbose=True):
         """
-
-
-        Returns:
-
-        """
-        """
         Executes a command on the TFS instance.
 
         Args:
