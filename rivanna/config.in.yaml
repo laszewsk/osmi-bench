@@ -25,7 +25,10 @@ system:
 experiment:
   directive: "a100"
   repeat: "1"
-  model: "small_lstm,medium_cnn,large_tcnn"
+  #model: "small_lstm"
+  model: "medium_cnn"
+  #model: "large_tcnn"
+  #model: "small_lstm,medium_cnn,large_tcnn"
   batch: "32"  
   gpus: "1"
   clients: "1"

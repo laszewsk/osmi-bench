@@ -98,6 +98,6 @@ with open(args.outfile, 'a+') as f:
 StopWatch.stop(f"log")  
             
 StopWatch.stop(f"total")
-StopWatch.benchmark(tag=args.name)
+StopWatch.benchmark(tag=f"name={args.name},model={args.model}" )
 progress(status="done", progress=100)
 
