@@ -8,6 +8,10 @@ PROJECT_DIR=../..
 
 .PHONY: images image-docker project
 
+test: 
+	rm -rf project
+	make -f Makefile project
+	
 benchmark:
 	-make project
 	-make run  
@@ -25,7 +29,7 @@ requirements:
 # PROJECT MANAGEMENT
 # #####################################################################
 
-project: project_slurm generate
+project: project-slurm
 
 #setup:
 #	python setup_env_and_yaml.py

@@ -4,10 +4,12 @@
 #SBATCH --output=osmi-{identifier}-%u-%j.out
 #SBATCH --error=osmi-{identifier}-%u-%j.err
 {slurm.sbatch}
+#SBATCH --partition=batch
+#SBATCH --account=gen150_smartsim
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --mem=64GB
 #SBATCH --cpus-per-task=1
+#SBATCH --gpus-per-task=1
 #SBATCH --time={ee.time}
 
 PROGRESS() {
@@ -18,28 +20,29 @@ PROGRESS() {
 
 PROGRESS "running" "configure" 1
 
-nvidia-smi
+module load rocm
+rocm-smi
 
 PROGRESS "running" "configure" 2
 
 MODELS_DIR=./models
 
-export USER_SCRATCH=/scratch/$USER
+#export USER_SCRATCH=/scratch/$USER
 
 
 RESULT_DIR=`pwd`
 
-if [ -z "$OSMI_TARGET" ]; then
-    echo "OSMI_TARGET is not set"
-    exit 1
-fi
-export CONTAINER_DIR=$OSMI_TARGET/images/
+#if [ -z "$OSMI_TARGET" ]; then
+#    echo "OSMI_TARGET is not set"
+#    exit 1
+#fi
+#export CONTAINER_DIR=$OSMI_TARGET/images/
 
-module purge
-module load apptainer
+#module purge
+#module load apptainer
 
 MODEL={experiment.model}
-CONTAINER=$CONTAINER_DIR/cloudmesh-tfs-23-10-nv.sif
+#CONTAINER=$CONTAINER_DIR/cloudmesh-tfs-23-10-nv.sif
 
 echo "============================================================"
 echo "PROJECT_ID: {identifier}"
@@ -51,7 +54,8 @@ PROGRESS "running" "training" 3
 
 cd $MODELS_DIR
 
-time apptainer exec --nv $CONTAINER python train.py $MODEL
+#time apptainer exec --nv $CONTAINER python train.py $MODEL
+time python train.py $MODEL
 
 PROGRESS "completed" "done" 100
 
