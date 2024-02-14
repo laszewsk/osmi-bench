@@ -1,0 +1,40 @@
+Bootstrap: docker
+
+#From: tensorflow/serving:latest-gpu
+
+# CUDA >=12.3.2 driver >=545 
+# From:  nvcr.io/nvidia/tensorflow:23.12-tf2-py3 
+
+# CUDA >=12.2.2 driver >=535, rivanna Jan 2024
+# Python 3.10.12 (main, Jun 11 2023, 05:26:28) [GCC 11.4.0] on linux
+
+From:  nvcr.io/nvidia/tensorflow:23.10-tf2-py3
+ 
+
+%post
+    echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" | tee /etc/apt/sources.list.d/tensorflow-serving.list && \
+curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg | apt-key add -
+    apt-get update 
+    apt install -y tensorflow-model-server
+    apt upgrade -y tensorflow-model-server
+
+    apt install -y lsof
+    apt install -y python3-pip
+    # pip install pip -U
+
+
+    #pip install tensorflow[and-cuda]
+    pip install tensorflow-serving-api[and-cuda]
+
+
+    pip install grpcio
+    pip install numpy
+    pip install requests
+    pip install tqdm
+
+    
+	pip install cloudmesh-common
+	pip install cloudmesh-gpu
+    pip install cloudmesh-apptainer
+    
+    #smartredis==0.3.1
