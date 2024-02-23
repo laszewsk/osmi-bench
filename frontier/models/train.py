@@ -12,6 +12,9 @@ from cloudmesh.common.StopWatch import StopWatch
 from cloudmesh.common.util import banner
 from cloudmesh.common.debug import VERBOSE
 
+
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+
 StopWatch.start("total")
 StopWatch.start("setup")
 parser = argparse.ArgumentParser()

@@ -4,13 +4,11 @@
 #SBATCH --output=osmi-{identifier}-%u-%j.out
 #SBATCH --error=osmi-{identifier}-%u-%j.err
 {slurm.sbatch}
-#SBATCH --partition=batch
-#SBATCH --account=gen150_smartsim
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
+#SBATCH --mem=64GB
 #SBATCH --cpus-per-task=1
-#SBATCH --gpus=1
-#SBATCH --time={time.{experiment.model}}
+#SBATCH --time={ee.time}
 
 PROGRESS() {
     echo "# ###############################################"
@@ -18,49 +16,30 @@ PROGRESS() {
     echo "# ###############################################"
 }
 
-VENV=ENV3-NEW
+PROGRESS "running" "configure" 1
 
-PROGRESS "running" "modules" 1
-
-source /opt/cray/pe/cpe/23.12/restore_lmod_system_defaults.sh
-
-module load cray-python
-module load rocm
-module list
-
-PROGRESS "running" "python" 1
-
-source ../../../$VENV/bin/activate
-
-which python
-python --version
-python ../../test-tf.py
-
-
-PROGRESS "running" "gpus" 1
-
-rocm-smi
+nvidia-smi
 
 PROGRESS "running" "configure" 2
 
 MODELS_DIR=./models
 
-#export USER_SCRATCH=/scratch/$USER
+export USER_SCRATCH=/scratch/$USER
 
 
 RESULT_DIR=`pwd`
 
-#if [ -z "$OSMI_TARGET" ]; then
-#    echo "OSMI_TARGET is not set"
-#    exit 1
-#fi
-#export CONTAINER_DIR=$OSMI_TARGET/images/
+if [ -z "$OSMI_TARGET" ]; then
+    echo "OSMI_TARGET is not set"
+    exit 1
+fi
+export CONTAINER_DIR=$OSMI_TARGET/images/
 
-#module purge
-#module load apptainer
+module purge
+module load apptainer
 
 MODEL={experiment.model}
-#CONTAINER=$CONTAINER_DIR/cloudmesh-tfs-23-10-nv.sif
+CONTAINER=$CONTAINER_DIR/cloudmesh-tfs-23-10-nv.sif
 
 echo "============================================================"
 echo "PROJECT_ID: {identifier}"
@@ -72,8 +51,7 @@ PROGRESS "running" "training" 3
 
 cd $MODELS_DIR
 
-#time apptainer exec --nv $CONTAINER python train.py $MODEL
-time python train.py $MODEL
+time apptainer exec --nv $CONTAINER python train.py $MODEL
 
 PROGRESS "completed" "done" 100
 

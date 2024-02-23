@@ -11,6 +11,7 @@ PROJECT_DIR=../..
 test: 
 	rm -rf project
 	make -f Makefile project
+	sh project-jobs-slurm.sh
 	
 benchmark:
 	-make project

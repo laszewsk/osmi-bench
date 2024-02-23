@@ -15,6 +15,6 @@ requests==2.30.0
 ## smartredis==0.3.1
 # smartredis==0.5.0
 tensorflow-rocm==2.14.0.600
-# wes: tqdm==4.66.1
-tqdm==4.66.2
+tqdm==4.66.1
+## tqdm==4.66.2
 

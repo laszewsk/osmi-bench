@@ -1,0 +1,13 @@
+#tensorflow-serving
+grpcio
+numpy
+#requests==2.27.1
+#smartredis==0.3.1
+tensorflow[and-cuda]
+tensorflow-serving-api
+tqdm
+#cloudmesh-common
+#cloudmesh-cmd5
+#cloudmesh-sys
+#cloudmesh-apptainer
+tenorflow

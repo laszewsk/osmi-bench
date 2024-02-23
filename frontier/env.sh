@@ -3,11 +3,11 @@ module load rocm
 which python
 python --version
 
-python -m venv ENV3
-source ENV3/bin/activate
+python -m venv ENV3-OSMI
+source ENV3-OSMI/bin/activate
 
 which python
 python --version
-pip install pip -U
+pip install -v pip -U
 
-pip install -r requirements.txt
+pip install -v -r requirements.txt

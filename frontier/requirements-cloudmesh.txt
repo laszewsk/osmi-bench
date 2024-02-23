@@ -1,0 +1,5 @@
+numpy
+cloudmesh-common
+cloudmesh-cmd5
+cloudmesh-sys
+cloudmesh-ee
