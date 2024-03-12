@@ -1,0 +1,21 @@
+cloudmesh-common
+cloudmesh-cmd5
+cloudmesh-sys
+cloudmesh-ee
+
+##grpcio==1.0.0
+##grpcio==1.24.3
+numpy
+grpcio==1.60.1
+numpy==1.26.4
+requests==2.30.0
+
+# tensorflow-serving-api==2.14.1
+
+## smartredis==0.3.1
+# smartredis==0.5.0
+#tensorflow-rocm==2.14.0.600
+tensorflow[and-cuda]
+# wes: tqdm==4.66.1
+tqdm==4.66.2
+
