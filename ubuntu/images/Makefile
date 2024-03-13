@@ -20,6 +20,13 @@ shell-tfs:
 image-haproxy: haproxy_latest.sif
 	-apptainer pull docker://haproxy:latest
 
+docker-image:
+	docker build  -t ${IMAGE_TF}.docker -t osmi.docker .
+	docker image ls ${IMAGE_TFS}.docker
+	docker image ls osmi.docker
+
+docker-shell:
+	docker run -it ${IMAGE_TF}.docker /bin/bash
 
 # watch: 
 # 	watch squeue --format=\"%.18i %.9P %.50j %.8u %.8T %.10M %.9l %.6D %R\" --me

@@ -1,11 +1,24 @@
 NAME=osmi
-
 SHELL=/bin/bash
+USER_NAME=$(shell whoami)
+GROUP_NAME=$(shell id -g)
+USER_ID=$(shell id -u)
+GROUP_ID=$(getent group | fgrep ${GROUP_NAME} | cut -d":" -f 3)
 
 OS_DIR=..
 PROJECT_DIR=../..
+PWD=$(shell pwd)
+
 
 .PHONY: images image-docker project
+
+check-container:
+ifdef WITH_CONTAINER
+	@echo "WITH_CONTAINER is set to $$WITH_CONTAINER"
+else
+	@echo "WITH_CONTAINER is not set"
+	exit 1
+endif
 
 test: 
 	rm -rf project
@@ -16,7 +29,7 @@ benchmark:
 	-make project
 	-make run  
 
-all: requirements data
+all: check-container requirements data
 
 # #####################################################################
 # REQUIREMENTS
@@ -141,6 +154,34 @@ shell:
 
 shell-serving:
 	apptainer ${BIND} shell --nv images/serving.sif
+
+# #####################################################################
+# DOCKER IMAGE (NOT TESTED)
+# #####################################################################
+
+
+docker-image:
+	cd ../images; time make docker-image
+	# time docker pull tensorflow/serving
+
+docker-shell:
+	docker run -it \
+		-v ${PWD}:${PWD} \
+		-u ${USER_ID}:${GROUP_NAME} \
+		-w ${PWD} \
+		--gpus all \
+	    --volume="/etc/group:/etc/group:ro" \
+    	--volume="/etc/passwd:/etc/passwd:ro" \
+    	--volume="/etc/shadow:/etc/shadow:ro" \
+		osmi.docker /bin/bash
+
+
+docker-train:
+	docker run -it \
+		-v ${PWD}:${PWD} \
+		-u $(USER_ID):$(GROUP_NAME) \
+		osmi.docker /bin/bash -c "cd ${PWD}; python train.py"	
+
 
 # #####################################################################
 # THESE ARE NOT YET DONE AND JUST PLACEHOLDERS

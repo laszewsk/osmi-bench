@@ -20,6 +20,12 @@ PROGRESS() {
 
 VENV=ENV3-OSMI
 
+USER_NAME=`whoami`
+GROUP_NAME=`id -g`
+USER_ID=`id -u`
+GROUP_ID=`getent group | fgrep ${GROUP_NAME} | cut -d":" -f 3`
+
+
 PROGRESS "running" "modules" 1
 
 if echo "$hostname" | grep -q "crusher"; then
@@ -41,7 +47,8 @@ elif echo "$hostname" | grep -q "summit"; then
 
 else
     echo "Regular Linux machine. No module load"
-    WITH_CONTAINER="apptainer"
+    # WITH_CONTAINER="apptainer"
+    # WITH_CONTAINER="docker"
     CONTAINER_DIR=../../../../images
 fi
 
@@ -99,6 +106,20 @@ cd $MODELS_DIR
 
 if [ "$WITH_CONTAINER" = "apptainer" ]; then
     time apptainer exec --nv $CONTAINER python train.py $MODEL 2>&1 | tr -d '\033\b' | tee $RESULT_DIR/train.log
+elif [ "$WITH_CONTAINER" = "docker" ]; then
+    #docker run --gpus all -v $(pwd):$(pwd) $CONTAINER python train.py $MODEL 2>&1 | tr -d '\033\b' | tee $RESULT_DIR/train.log
+
+	docker run -it \
+		-v /home/${USER}:/home/${USER} \
+		-v ${PWD}:${PWD} \
+		-u ${USER_ID}:${GROUP_NAME} \
+		-w ${PWD} \
+		--gpus all \
+	    --volume="/etc/group:/etc/group:ro" \
+    	--volume="/etc/passwd:/etc/passwd:ro" \
+    	--volume="/etc/shadow:/etc/shadow:ro" \
+		osmi.docker /bin/bash -c "cd ${PWD}; python train.py $MODEL"	
+
 else
     time python train.py $MODEL 2>&1 | tr -d '\033\b' | tee $RESULT_DIR/train.log
 fi
