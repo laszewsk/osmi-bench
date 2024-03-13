@@ -6,13 +6,13 @@ images: image-tfs
 
 
 image-tf: ${IMAGE_TF}.def
-	-apptainer build --force ${IMAGE_TF}.sif ${IMAGE_TF}.def
+	-time apptainer build --force ${IMAGE_TF}.sif ${IMAGE_TF}.def
 
 shell-tf:
 	-singularity shell --nv ${IMAGE_TF}.sif
 
 image-tfs: ${IMAGE_TFS}.def
-	-apptainer build --force ${IMAGE_TFS}.sif ${IMAGE_TFS}.def
+	-time apptainer build --force ${IMAGE_TFS}.sif ${IMAGE_TFS}.def
 
 shell-tfs:
 	-singularity shell --nv ${IMAGE_TFS}.sif
@@ -21,7 +21,7 @@ image-haproxy: haproxy_latest.sif
 	-apptainer pull docker://haproxy:latest
 
 docker-image:
-	docker build  -t ${IMAGE_TF}.docker -t osmi.docker .
+	time docker build  -t ${IMAGE_TF}.docker -t osmi.docker .
 	docker image ls ${IMAGE_TFS}.docker
 	docker image ls osmi.docker
 
