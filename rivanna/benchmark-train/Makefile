@@ -25,7 +25,7 @@ requirements:
 # PROJECT MANAGEMENT
 # #####################################################################
 
-project: project_slurm generate
+project: project-slurm generate
 
 #setup:
 #	python setup_env_and_yaml.py
@@ -75,8 +75,11 @@ clean:
 	@-rm -rf '__pycache__'
 	@-rm -rf *~
 
-# PROJECT_USER=/project/bii_dsc_community/tma5gv
-PROJECT_USER=/scratch/tma5gv
+clean-models:
+	rm -rf ../models/archs/__pycache__
+	rm -rf ../models/large_tcnn
+	rm -rf ../models/medium_cnn
+	rm -rf ../models/small_lstm
 
 get-results:
 	-rsync -av --progress rivanna:${PROJECT_USER}/${NAME}/target/rivanna/project .
